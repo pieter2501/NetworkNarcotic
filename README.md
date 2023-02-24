@@ -23,7 +23,9 @@ In the end, you will have three items:
 With NetworkNarcotic still being a prototype, the procedure up above is a little on the crude side and will probably be streamlined in the future, perhaps adding a GUI. That aside, it currently also only supports IPv4.
 
 ## Expectations
-The core idea behind NetworkNarcotic is to **save time** when plotting networks. Input files are relatively straightforward and writing them can be learned quickly. However, since nothing can (as of yet) truly substitute for human intelligence, NetworkNarcotic must make some assumptions about the network you desire. Any 'gaps' in the information you provide, the tool will try to fill in on its own. These decisions are made in a systematic and predictable manner, but in the end, remain out of reach for the user. **In automation, there is always a balance between precision and the amount of time saved.**
+The core idea behind NetworkNarcotic is to **save time** when plotting networks. Input files are relatively straightforward and writing them can be learned quickly. However, since nothing can (as of yet) truly substitute for human intelligence, NetworkNarcotic must make some assumptions about the network you desire. Any 'gaps' in the information you provide, the tool will try to fill in on its own. These decisions are made in a systematic and predictable manner, but in the end, remain out of reach for the user. 
+
+**In automation, there is always a balance between precision and the amount of time saved.**
 
 ## Example input file
 ```
@@ -33,6 +35,7 @@ connectionmode: single
 ipsummary: auto
 cables: 1
 cabletype: auto
+ipclass: C
 
 connection:
   tag: 'A'
@@ -84,7 +87,7 @@ NetworkNarcotic input files work with a concept called **clusters**. A cluster i
 
 You can use a connection if you want to connect clusters to each other or connect a stub network to a router. These connections can be direct (one-to-one) or contain switches, in which case a switch cluster needs to be added inside the desired connection variable. If more than 2 router clusters need to be connected, the connection variable should contain a switch cluster. A connection can be defined inside a router cluster, but be aware: the other router cluster will need the **exact same** connection definition. In order to avoid repeating yourself, it's better to define connections on a global level and refer to their tag in the router clusters.
 
-The way clusters and connections are internally cabled depends on the variables **clustermode** and **connectionmode**. They're similar but cannot be used interchangeably. If no clustermode variable is defined in a cluster, the global clustermode variable will be used. If no global clustermode variable is defined, the default value will be used (in thise case 'full'). The same mechanism applies to the connectionmode variable.
+The way clusters and connections are internally cabled depends on the variables **clustermode** and **connectionmode**. They're similar but cannot be used interchangeably. If no clustermode variable is defined in a cluster, the global clustermode variable will be used. If no global clustermode variable is defined, the default value will be used (in thise case 'full'). The same mechanism applies to the connectionmode variable, among others.
 
 ### **Variables**
 > **clustermode:** <**full** (default) | **single** | **loop** | **hubspoke**>
@@ -97,39 +100,43 @@ The way clusters and connections are internally cabled depends on the variables 
     > hubspoke    hub-and-spoke topology, every device is connected to one central device
     > ...         (more to come)
 
-> **connmode:** <**single** (default) | **full** | **exhaust**>
+> **connectionmode:** <**single** (default) | **full** | **exhaust**>
 
-    Influences the cable layout of a connection between clusters.
+    Influences the cable layout of a connection.
 
     > single    a single cable is applied between ONE device from each cluster
     > full      every device in one cluster is connected to every device in the other cluster
+    > loop      clusters are connected in a loop
     > exhaust   multiple cables are applied between PARALLELS of devices from all clusters 
                 until the smallest cluster is exhausted
     > ...       (more to come)
 
 > **ipsummary:** <**auto** (default) | IP address in CIDR notation> 
 
-    Influences the used address space in a cluster or connection. When applied to multiple networks (for example a cluster with 3+ routers) NetworkNarcotic will use the suppl
+    Influences the used address space in a cluster or connection. When applied to multiple networks (for example a cluster with 3+ routers) NetworkNarcotic will use the supplied variable value as a summary and select the most economical address spaces to achieve connectivity.
 
     > auto                          let NetworkNarcotic decide all IP addresses on its own (uses 
                                     class A private addresses or uses the address space of the 
-                                    environment the "auto" variable value is applied in)
+                                    environment the variable is applied in)
     > IP address in CIDR notation   manually pick the address space
 
-* cables:
-    * 1 (default)
-    * \<number between 1 and 3>
-* cabletype:
-    * auto (default)
-    * copper
-    * serial
-    * wireless
+> **cables:** <**1** (default) | number between 1 and 3>
 
+    Influences the Etherchannel configuration in a cluster or connection.
 
+> **cabletype:** <**auto** (default) | **copper** | **fiber** | **serial**>
 
+    Influences the type of cabling in a cluster or connection.
 
-clustermode: <full (default) | loop | single | hubspoke>		# Influences cable layout for a cluster
-connmode: <single (default) | full | exhaust>				# Influences cable layout for a connection between clusters
-ipsummary: <auto (default) | IP ADDRESS/MASK>				# Influences used address space in a cluster or connection
-cables: <1 (default) | NUMBER>						# Influences EtherChannel
-cabletype: <auto ...>							# TO-DO
+    > auto    let NetworkNarcotic decide all cabling types on its own (follows best practice)
+    > copper  use copper cabling
+    > fiber   use fiber cabling
+    > serial  user serial cabling (not available for connections containing a switch)
+
+> **ipclass:** <**A** (default) | **B** | **C**>
+
+    Influences the used private address space.
+
+    > A       10.0.0.0 - 10.255.255.255
+    > B       172.16.0.0 - 172.31.255.255
+    > C       192.168.0.0 - 192.168.255.255
