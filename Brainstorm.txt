@@ -1,0 +1,76 @@
++==============+
+| INPUT FORMAT |
++==============+
+
+# This is a NetworkNarcotic input file representing a network diagram
+---
+clustermode: <full (default) | loop | single | hubspoke>		# Influences cable layout for a cluster
+connmode: <full (default) | single | exhaust>				# Influences cable layout for a connection between clusters
+ipsummary: <auto (default) | IP ADDRESS/MASK>				# Influences used address space in a cluster or connection
+cables: <1 (default) | NUMBER>						# Influences EtherChannel
+cabletype: <auto ...>							# TO-DO
+
+# Clustermode full = full mesh topology, every device is connected to every other device
+# Clustermode loop = circle topology, devices are connected in a loop
+# Clustermode single = line topology, basically loop mode with a cut in it
+# Clustermode hubspoke = hub-and-spoke topology, every device is connected to one central device
+
+# Connmode full = full mesh topology, every device in one cluster is connected to every device in the other cluster
+# Connmode single = a single cable is applied between ONE PAIR of devices from both clusters
+# Connmode exhaust = multiple cables are applied between PARALLEL PAIRS of devices from both clusters until the smallest cluster is exhausted
+
+conn:
+  tag: 'A'
+  ipsummary: 10.1.0.0/16
+  connmode: full
+  cables: 2
+
+conn:
+  tag: 'B'
+  ipsummary: 10.2.0.0/16
+  connmode: exhaust
+
+conn:
+  tag: 'C'
+  switch:
+    amount: 4
+    clustermode: hubspoke
+  ipsummary: 192.168.1.0/24
+  connmode: single
+
+router:
+  amount: 1
+  conn: 'A'
+  internet:
+    ipsummary: 165.25.32.15/24
+
+router:
+  amount: 2
+  conn: 
+    - 'A'
+    - 'B'
+    - 'C'
+  iprange: 10.3.0.0/16
+
+router:
+  amount: 4
+  conn: 'B'
+  ipsummary: 10.4.0.0/16
+  clustermode: single
+
+router:
+  amount: 1
+  conn: 'C'
+
+
++===============+
+| OUTPUT FORMAT |
++===============+
+
+# This is a NetworkNarcotic output file representing a network diagram
+---
+
+
+
+
+
