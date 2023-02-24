@@ -113,7 +113,10 @@ The way clusters and connections are internally cabled depends on the variables 
 
 > **ipsummary:** <**auto** (default) | IP address in CIDR notation> 
 
-    Influences the used address space in a cluster or connection. When applied to multiple networks (for example a cluster with 3+ routers) NetworkNarcotic will use the supplied variable value as a summary and select the most economical address spaces to achieve connectivity.
+    Influences the used address space in a cluster or connection. When applied to multiple 
+    networks (for example a cluster with 3+ routers) NetworkNarcotic will use the supplied 
+    variable value as a summary and select the most economical address spaces to achieve 
+    connectivity.
 
     > auto                          let NetworkNarcotic decide all IP addresses on its own (uses 
                                     class A private addresses or uses the address space of the 
@@ -131,7 +134,7 @@ The way clusters and connections are internally cabled depends on the variables 
     > auto    let NetworkNarcotic decide all cabling types on its own (follows best practice)
     > copper  use copper cabling
     > fiber   use fiber cabling
-    > serial  user serial cabling (not available for connections containing a switch)
+    > serial  use serial cabling (not available for connections containing a switch)
 
 > **ipclass:** <**A** (default) | **B** | **C**>
 
