@@ -74,7 +74,7 @@ router:
   amount: 4
   connection: 'B'
   ipsummary: 10.4.0.0/16
-  clustermode: single
+  clustermode: line
 
 router:
   amount: 1
@@ -103,8 +103,8 @@ The way clusters and connections are internally cabled depends on the variables 
     Influences the cable layout of a cluster.
 
     > full        full mesh topology, every device is connected to every other device
-    > loop        circle topology, devices are connected in a loop
-    > single      line topology, basically loop mode with a cut in it
+    > loop        loop topology, devices are connected in a loop
+    > line        line topology, basically loop mode with a cut in it
     > hubspoke    hub-and-spoke topology, every device is connected to one central device
     > ...         (more to come)
 
