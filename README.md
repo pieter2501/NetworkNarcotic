@@ -27,7 +27,7 @@ The core idea behind NetworkNarcotic is to **save time** when plotting networks.
 
 **In automation, there is always a balance between precision and the amount of time saved.**
 
-## Example input file
+## Example input file and the network it produces
 ```
 ---
 clustermode: full
@@ -80,6 +80,14 @@ router:
   amount: 1
   connection: 'C'
 ```
+
+![image info](./img/exampleFull.png)
+
+As seen in the picture,
+* encircled red are router clusters,
+* encircled green is a switch cluster in connection 'C,'
+* IP summarization is applied in the router clusters.
+
 
 ## How to write input files
 ### **Important before you continue**
