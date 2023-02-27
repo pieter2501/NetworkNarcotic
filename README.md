@@ -27,7 +27,7 @@ The core idea behind NetworkNarcotic is to **save time** when plotting networks.
 
 **In automation, there is always a balance between precision and the amount of time saved.**
 
-## Example input file and the network it produces
+## Example input file
 ```
 ---
 clustermode: full
@@ -97,7 +97,9 @@ NetworkNarcotic input files work with a concept called **clusters**. A cluster i
 
 You can use a connection if you want to connect clusters to each other or connect a stub network to a router. These connections can be direct (one-to-one) or contain switches, in which case a switch cluster needs to be added inside the desired connection variable. If more than 2 router clusters need to be connected, the connection variable should contain a switch cluster. A connection can be defined inside a router cluster, but be aware: the other router cluster will need the **exact same** connection definition. In order to avoid repeating yourself, it's better to define connections on a global level and refer to their tag in the router clusters.
 
-The way clusters and connections are internally cabled depends on the variables **clustermode** and **connectionmode**. They're similar but cannot be used interchangeably. If no clustermode variable is defined in a cluster, the global clustermode variable will be used. If no global clustermode variable is defined, the default value will be used (in this case 'full'). The same mechanism applies to the connectionmode variable, among others.
+The way clusters and connections are cabled depends on the variables **clustermode** and **connectionmode**. They're similar but cannot be used interchangeably. If no clustermode variable is defined in a cluster, the global clustermode variable will be used. If no global clustermode variable is defined, the default value will be used (in this case 'full'). The same mechanism applies to the connectionmode variable, among others.
+
+Lastly, it's important to know that every device in a cluster (whether router or switch) receives a logically assigned ID upon creation. Refer to the example network up above to see the ID's written on the devices. A cluster with 5 devices has ID's 1 to 5. ID's are unique within a cluster and are used by some variables to decide which device to select or to break a tie. ID = 1 has the highest priority and will always be selected first. Variables/values that require device ID's for device selection or tie breaking are marked down below with an **\* asterisk**.
 
 ### **Variables**
 > **clustermode:** <**full** (default) | **single** | **loop** | **hubspoke**>
@@ -107,18 +109,20 @@ The way clusters and connections are internally cabled depends on the variables 
     > full        full mesh topology, every device is connected to every other device
     > loop        loop topology, devices are connected in a loop
     > line        line topology, basically loop mode with a cut in it
-    > hubspoke    hub-and-spoke topology, every device is connected to one central device
+    > hubspoke    hub-and-spoke topology, every device is connected to one central device (ID = 1)
     > ...         (more to come)
 
 > **connectionmode:** <**single** (default) | **full** | **exhaust**>
 
     Influences the cable layout of a connection.
 
-    > single    a single cable is applied between ONE device from each cluster
-    > full      every device in one cluster is connected to every device in the other cluster
-    > exhaust   multiple cables are applied between PARALLELS of devices from all clusters 
-                until the smallest cluster is exhausted
-    > ...       (more to come)
+    > single *    a single cable is applied between ONE device from each cluster
+    > full        every device in one cluster is connected to every device in the other cluster
+    > seek *      a single cable is applied between the device with the lowest amount of 
+                  non-seek connections from each cluster
+    > exhaust *   multiple cables are applied between PARALLELS of devices from all clusters 
+                  until the smallest cluster is exhausted
+    > ...         (more to come)
 
 > **ipsummary:** <**auto** (default) | IP address in CIDR notation> 
 
