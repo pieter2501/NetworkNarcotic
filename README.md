@@ -86,7 +86,7 @@ router:
 As seen in the picture,
 * encircled red are router clusters,
 * encircled green is a switch cluster in connection 'C,'
-* IP summarization is applied in the router clusters.
+* IP summarization is applied in the router clusters and connections.
 
 
 ## How to write input files
