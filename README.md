@@ -82,7 +82,7 @@ router:
   connection: 'C'
 ```
 
-![The network produced based on the input file above](./img/exampleFull.PNG)
+![The network produced based on the input file above](./img/example.PNG)
 
 As seen in the picture,
 * encircled red are router clusters,
