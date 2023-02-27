@@ -36,6 +36,7 @@ ipsummary: auto
 cables: 1
 cabletype: auto
 ipclass: C
+connectionshift: 0
 
 connection:
   tag: 'A'
@@ -150,3 +151,16 @@ The way clusters and connections are internally cabled depends on the variables 
     > A       10.0.0.0 - 10.255.255.255
     > B       172.16.0.0 - 172.31.255.255
     > C       192.168.0.0 - 192.168.255.255
+
+> **connectionshift:** <**0** (default) | number between 0 and 255>
+
+    Influences the starting point of a connection's cabling algorithm (connectionmode variable). 
+    When NetworkNarcotic is building the network topology in memory, devices in a cluster 
+    receive an ID (starting at 1, counting upwards) in the linear order they were created. This 
+    ID is treated as their priority, with 1 being the highest. Connections respect this order 
+    and always go for the device with ID = 1 first. With connectionmode = full, the 
+    connectionshift variable has no effect.
+
+> **shiftable:** <**true** (default) | **false**>
+
+    Influences whether or not a cluster is susceptible to the connectionshift variable.
