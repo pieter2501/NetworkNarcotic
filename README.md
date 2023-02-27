@@ -60,7 +60,7 @@ router:
   amount: 1
   connection: 'A'
   internet:
-    ipsummary: 165.25.32.15/24
+    ipsummary: 165.25.32.15/32
 
 router:
   amount: 2
