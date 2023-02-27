@@ -87,7 +87,7 @@ NetworkNarcotic input files work with a concept called **clusters**. A cluster i
 
 You can use a connection if you want to connect clusters to each other or connect a stub network to a router. These connections can be direct (one-to-one) or contain switches, in which case a switch cluster needs to be added inside the desired connection variable. If more than 2 router clusters need to be connected, the connection variable should contain a switch cluster. A connection can be defined inside a router cluster, but be aware: the other router cluster will need the **exact same** connection definition. In order to avoid repeating yourself, it's better to define connections on a global level and refer to their tag in the router clusters.
 
-The way clusters and connections are internally cabled depends on the variables **clustermode** and **connectionmode**. They're similar but cannot be used interchangeably. If no clustermode variable is defined in a cluster, the global clustermode variable will be used. If no global clustermode variable is defined, the default value will be used (in thise case 'full'). The same mechanism applies to the connectionmode variable, among others.
+The way clusters and connections are internally cabled depends on the variables **clustermode** and **connectionmode**. They're similar but cannot be used interchangeably. If no clustermode variable is defined in a cluster, the global clustermode variable will be used. If no global clustermode variable is defined, the default value will be used (in this case 'full'). The same mechanism applies to the connectionmode variable, among others.
 
 ### **Variables**
 > **clustermode:** <**full** (default) | **single** | **loop** | **hubspoke**>
