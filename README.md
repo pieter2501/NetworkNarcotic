@@ -114,7 +114,6 @@ The way clusters and connections are internally cabled depends on the variables 
 
     > single    a single cable is applied between ONE device from each cluster
     > full      every device in one cluster is connected to every device in the other cluster
-    > loop      clusters are connected in a loop
     > exhaust   multiple cables are applied between PARALLELS of devices from all clusters 
                 until the smallest cluster is exhausted
     > ...       (more to come)
