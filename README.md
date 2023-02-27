@@ -37,6 +37,7 @@ cables: 1
 cabletype: auto
 ipclass: C
 connectionshift: 0
+routing: static
 
 connection:
   tag: 'A'
@@ -165,3 +166,7 @@ The way clusters and connections are internally cabled depends on the variables 
 > **shiftable:** <**true** (default) | **false**>
 
     Influences whether or not a cluster is susceptible to the connectionshift variable.
+    
+> **routing:** <**static** (default)>
+
+    Influences how routers in the network fill their forwarding tables. OSPF/EIGRP/IS-IS may be added later.
