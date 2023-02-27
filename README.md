@@ -99,7 +99,13 @@ You can use a connection if you want to connect clusters to each other or connec
 
 The way clusters and connections are cabled depends on the variables **clustermode** and **connectionmode**. They're similar but cannot be used interchangeably. If no clustermode variable is defined in a cluster, the global clustermode variable will be used. If no global clustermode variable is defined, the default value will be used (in this case 'full'). The same mechanism applies to the connectionmode variable, among others.
 
-Lastly, it's important to know that every device in a cluster (whether router or switch) receives a logically assigned ID upon creation. Refer to the example network up above to see the ID's written on the devices. A cluster with 5 devices has ID's 1 to 5. ID's are unique within a cluster and are used by some variables to decide which device to select or to break a tie. ID = 1 has the highest priority and will always be selected first. Variables/values that require device ID's for device selection or tie breaking are marked down below with an **\* asterisk**.
+Lastly, it's important to know that every device in a cluster (whether router or switch) receives a linearly assigned ID upon creation. Refer to the example network up above to see the ID's written on the devices. A cluster with 5 devices has ID's 1 to 5. ID's are unique within a cluster and are used by the connectionmode variable to:
+
+* decide which device to select,
+* or to break ties when devices get selected in some other way. 
+
+ID = 1 has the highest priority and will always be selected first. Connectionmode values that require device ID's are 
+marked down below with an **\* asterisk**.
 
 ### **Variables**
 > **clustermode:** <**full** (default) | **single** | **loop** | **hubspoke**>
@@ -159,13 +165,9 @@ Lastly, it's important to know that every device in a cluster (whether router or
 
 > **connectionshift:** <**0** (default) | number between 0 and 255>
 
-    Influences the starting point of a connection's cabling algorithm (connectionmode variable). 
-    When NetworkNarcotic is building the network topology in memory, devices in a cluster 
-    receive an ID (starting at 1, counting upwards) in the linear order they were created. This 
-    ID is treated as their priority, with 1 being the highest. Connections respect this order 
-    and always go for the device with ID = 1 first. With connectionmode = full, the 
-    connectionshift variable has no effect. This variable has a circular nature and overflow
-    will start back at the device with ID = 1.
+    Influences the starting point of a connection's cabling algorithm (connectionmode variable). With connectionmode = 
+    full, the connectionshift variable has no effect. This variable has a circular nature and overflow will start back 
+    at the device with ID = 1.
 
 > **shiftable:** <**true** (default) | **false**>
 
