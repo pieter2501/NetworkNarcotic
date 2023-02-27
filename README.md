@@ -159,7 +159,8 @@ The way clusters and connections are internally cabled depends on the variables 
     receive an ID (starting at 1, counting upwards) in the linear order they were created. This 
     ID is treated as their priority, with 1 being the highest. Connections respect this order 
     and always go for the device with ID = 1 first. With connectionmode = full, the 
-    connectionshift variable has no effect.
+    connectionshift variable has no effect. This variable has a circular nature and overflow
+    will start back at the device with ID = 1.
 
 > **shiftable:** <**true** (default) | **false**>
 
