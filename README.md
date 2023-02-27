@@ -81,7 +81,7 @@ router:
   connection: 'C'
 ```
 
-![image info](./img/exampleFull.png)
+![The network produced based on the input file above](./img/exampleFull.PNG)
 
 As seen in the picture,
 * encircled red are router clusters,
