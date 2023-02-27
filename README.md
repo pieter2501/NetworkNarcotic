@@ -125,7 +125,7 @@ The way clusters and connections are internally cabled depends on the variables 
 
 > **cables:** <**1** (default) | number between 1 and 3>
 
-    Influences the Etherchannel configuration in a cluster or connection.
+    Influences the Etherchannel/Port Channel configuration in a cluster or connection.
 
 > **cabletype:** <**auto** (default) | **copper** | **fiber** | **serial**>
 
