@@ -215,7 +215,8 @@ marked down below with an **\* asterisk**.
 
 > **routing:** <**static** (default)>
 
-    Influences how routers in the network or a cluster fill their forwarding tables. OSPF/EIGRP/IS-IS may be added later. Each routing variable treats the area it affects as a domain.
+    Influences how routers in the network or a cluster fill their forwarding tables. OSPF/EIGRP/
+    IS-IS may be added later. Each routing variable treats the area it affects as a domain.
 
 > **switch:**
 
