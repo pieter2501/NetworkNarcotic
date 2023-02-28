@@ -30,15 +30,6 @@ The core idea behind NetworkNarcotic is to **save time** when plotting networks.
 ## Example input file
 ```
 ---
-clustermode: full
-connectionmode: single
-ipsummary: auto
-cables: 1
-cabletype: auto
-ipclass: C
-connectionshift: 0
-routing: static
-
 connection:
   tag: 'A'
   ipsummary: 10.1.0.0/16
@@ -56,13 +47,10 @@ connection:
     amount: 4
     clustermode: hubspoke
   ipsummary: 192.168.1.0/24
-  connectionmode: single
 
 router:
-  amount: 1
   connection: 'A'
-  internet:
-    ipsummary: 165.25.32.15/32
+  internet: 165.25.32.15/32
 
 router:
   amount: 2
@@ -80,7 +68,6 @@ router:
   connectionshift: 1
 
 router:
-  amount: 1
   connection: 'C'
 ```
 
@@ -108,40 +95,48 @@ Lastly, it's important to know that every device in a cluster (whether router or
 ID = 1 has the highest priority and will always be selected first. Connectionmode values that require device ID's are 
 marked down below with an **\* asterisk**.
 
-### **Variables**
-> **clustermode:** <**full** (default) | **single** | **loop** | **hubspoke**>
+### **Variables: YAML structure**
 
-    Influences the cable layout of a cluster.
+* amount: ...
+* cables: ...
+* cabletype: ...
+* clustermode: ...
+* connection:
+  * cables: ...
+  * cabletype: ...
+  * connectionmode: ...
+  * ipsummary: ...
+  * switch:
+    * amount: ...
+    * cables: ...
+    * cabletype: ...
+    * clustermode: ...
+    * connectionshift: ...
+    * ipclass: ...
+    * ipsummary: ...
+  * tag: ...
+* connectionmode: ...
+* connectionshift: ...
+* ipclass: ...
+* ipsummary: ...
+* router:
+  * amount: ...
+  * cables: ...
+  * cabletype: ...
+  * clustermode: ...
+  * connection: ... (connection definition or list of tags)
+  * connectionshift: ...
+  * internet: ...
+  * ipclass: ...
+  * ipsummary: ...
+  * routing: ...
+* routing: ...
 
-    > full        full mesh topology, every device is connected to every other device
-    > loop        loop topology, devices are connected in a loop
-    > line        line topology, basically loop mode with a cut in it
-    > hubspoke    hub-and-spoke topology, every device is connected to one central device (ID = 1)
-    > ...         (more to come)
+### **Variables: values**
 
-> **connectionmode:** <**single** (default) | **full** | **exhaust**>
+> **amount:** <**1** (default) | number between 1 and 255>
 
-    Influences the cable layout of a connection.
-
-    > single *    a single cable is applied between ONE device from each cluster
-    > full        every device in one cluster is connected to every device in the other cluster
-    > seek *      a single cable is applied between the device with the lowest amount of 
-                  non-seek connections from each cluster
-    > exhaust *   multiple cables are applied between PARALLELS of devices from all clusters 
-                  until the smallest cluster is exhausted
-    > ...         (more to come)
-
-> **ipsummary:** <**auto** (default) | IP address in CIDR notation> 
-
-    Influences the used address space in a cluster or connection. When applied to multiple 
-    networks (for example a cluster with 3+ routers) NetworkNarcotic will use the supplied 
-    variable value as a summary and select the most economical address spaces to achieve 
-    connectivity.
-
-    > auto                          let NetworkNarcotic decide all IP addresses on its own (uses 
-                                    class A private addresses or uses the address space of the 
-                                    environment the variable is applied in)
-    > IP address in CIDR notation   manually pick the address space
+    Influences the amount of devices in a cluster.
 
 > **cables:** <**1** (default) | number between 1 and 3>
 
@@ -156,6 +151,44 @@ marked down below with an **\* asterisk**.
     > fiber   use fiber cabling
     > serial  use serial cabling (not available for connections containing a switch)
 
+> **clustermode:** <**full** (default) | **single** | **loop** | **hubspoke**>
+
+    Influences the cable layout of a cluster.
+
+    > full        full mesh topology, every device is connected to every other device
+    > loop        loop topology, devices are connected in a loop
+    > line        line topology, basically loop mode with a cut in it
+    > hubspoke    hub-and-spoke topology, every device is connected to one central device (ID = 1)
+    > ...         (more to come)
+
+> **connection:**
+
+    Opens a connection variable. This can be done on the highest .yaml level or inside a router 
+    cluster.
+
+> **connectionmode:** <**single** (default) | **full** | **exhaust**>
+
+    Influences the cable layout of a connection.
+
+    > single *    a single cable is applied between ONE device from each cluster
+    > full        every device in one cluster is connected to every device in the other cluster
+    > seek *      a single cable is applied between the device with the lowest amount of 
+                  non-seek connections from each cluster
+    > exhaust *   multiple cables are applied between PARALLELS of devices from all clusters 
+                  until the smallest cluster is exhausted
+    > ...         (more to come)
+
+> **connectionshift:** <**0** (default) | number between 0 and 255>
+
+    Influences the starting point of a connection's cabling algorithm for a cluster. With 
+    connectionmode = full, the connectionshift variable has no effect. This variable has a 
+    circular nature and overflow will start back at the device with ID = 1.
+
+> **internet:** <**DHCP** (default) | IP address in CIDR notation>
+
+    Influences whether or not a router cluster is connected to the internet and what the 
+    outwards facing IP address is.
+
 > **ipclass:** <**A** (default) | **B** | **C**>
 
     Influences the used private address space.
@@ -164,12 +197,26 @@ marked down below with an **\* asterisk**.
     > B       172.16.0.0 - 172.31.255.255
     > C       192.168.0.0 - 192.168.255.255
 
-> **connectionshift:** <**0** (default) | number between 0 and 255>
+> **ipsummary:** <**auto** (default) | IP address in CIDR notation> 
 
-    Influences the starting point of a connection's cabling algorithm for a cluster. With 
-    connectionmode = full, the connectionshift variable has no effect. This variable has a 
-    circular nature and overflow will start back at the device with ID = 1.
+    Influences the used address space in a cluster or connection. When applied to multiple 
+    networks (for example a cluster with 3+ routers) NetworkNarcotic will use the supplied 
+    variable value as a summary and select the most economical address spaces to achieve 
+    connectivity.
+
+    > auto                          let NetworkNarcotic decide all IP addresses on its own (uses 
+                                    class A private addresses or uses the address space of the 
+                                    environment the variable is applied in)
+    > IP address in CIDR notation   manually pick the address space
+
+> **router:**
+
+    Opens a router cluster. This is always done on the highest .yaml level.
 
 > **routing:** <**static** (default)>
 
-    Influences how routers in the network fill their forwarding tables. OSPF/EIGRP/IS-IS may be added later.
+    Influences how routers in the network or a cluster fill their forwarding tables. OSPF/EIGRP/IS-IS may be added later. Each routing variable treats the area it affects as a domain.
+
+> **switch:**
+
+    Opens a switch cluster. This is always done inside a connection variable.
