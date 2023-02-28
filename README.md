@@ -189,7 +189,8 @@ marked down below with an **\* asterisk**.
 > **internet:** <**false** (default) | **true**>
 
     Influences whether or not a connection is hooked to the internet and, combined with the 
-    ipsummary variable, what the outside IP address space is. This variable cannot be combined with a switch cluster in the same connection. 
+    ipsummary variable, what the outside IP address space is. This variable cannot be combined 
+    with a switch cluster in the same connection. 
 
 > **ipclass:** <**A** (default) | **B** | **C**>
 
