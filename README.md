@@ -50,7 +50,9 @@ connection:
 
 router:
   connection: 'A'
-  internet: 165.25.32.15/32
+  connection:
+    internet: yes
+    ipsummary: 165.25.32.15/32
 
 router:
   amount: 2
@@ -106,6 +108,7 @@ marked down below with an **\* asterisk**.
   * cabletype: ...
   * connectionmode: ...
   * ipsummary: ...
+  * internet: ...
   * switch:
     * amount: ...
     * cables: ...
@@ -126,7 +129,6 @@ marked down below with an **\* asterisk**.
   * clustermode: ...
   * connection: ... (connection definition or list of tags)
   * connectionshift: ...
-  * internet: ...
   * ipclass: ...
   * ipsummary: ...
   * routing: ...
@@ -184,10 +186,10 @@ marked down below with an **\* asterisk**.
     connectionmode = full, the connectionshift variable has no effect. This variable has a 
     circular nature and overflow will start back at the device with ID = 1.
 
-> **internet:** <**DHCP** (default) | IP address in CIDR notation>
+> **internet:** <**false** (default) | **true**>
 
-    Influences whether or not a router cluster is connected to the internet and what the 
-    outwards facing IP address is.
+    Influences whether or not a connection is hooked to the internet and, combined with the 
+    ipsummary variable, what the outside IP address space is. This variable cannot be combined with a switch cluster in the same connection. 
 
 > **ipclass:** <**A** (default) | **B** | **C**>
 
@@ -204,9 +206,9 @@ marked down below with an **\* asterisk**.
     variable value as a summary and select the most economical address spaces to achieve 
     connectivity.
 
-    > auto                          let NetworkNarcotic decide all IP addresses on its own (uses 
-                                    class A private addresses or uses the address space of the 
-                                    environment the variable is applied in)
+    > auto                          let NetworkNarcotic decide all IP addresses on its own    
+                                    (first tries DHCP, then the address space of the environment 
+                                    the variable is applied in, lastly the ipclass variable)
     > IP address in CIDR notation   manually pick the address space
 
 > **router:**
@@ -220,4 +222,4 @@ marked down below with an **\* asterisk**.
 
 > **switch:**
 
-    Opens a switch cluster. This is always done inside a connection variable.
+    Opens a switch cluster. This is always done inside a connection variable. This variable cannot be combined with an internet variable in the same connection.
