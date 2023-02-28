@@ -184,7 +184,7 @@ marked down below with an **\* asterisk**.
     connectionmode = full, the connectionshift variable has no effect. This variable has a 
     circular nature and overflow will start back at the device with ID = 1.
 
-> **internet:** <None (default) | **DHCP** | IP address in CIDR notation>
+> **internet:** <none (default) | **DHCP** | IP address in CIDR notation>
 
     Influences whether or not a router cluster is connected to the internet and what the 
     outwards facing IP address is.
