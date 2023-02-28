@@ -224,8 +224,10 @@ marked down below with an **\* asterisk**.
 
 > **shiftable:** <**true** (default) | **false**>
 
-    Influences whether or not a connection is susceptible to the connectionshift variable when connected to a cluster.
+    Influences whether or not a connection is susceptible to the connectionshift variable when 
+    connected to a cluster.
 
 > **switch:**
 
-    Opens a switch cluster. This is always done inside a connection variable. This variable cannot be combined with an internet variable in the same connection.
+    Opens a switch cluster. This is always done inside a connection variable. This variable cannot 
+    be combined with an internet variable in the same connection.
