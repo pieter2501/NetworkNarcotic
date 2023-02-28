@@ -77,6 +77,7 @@ router:
   connection: 'B'
   ipsummary: 10.4.0.0/16
   clustermode: line
+  connectionshift: 1
 
 router:
   amount: 1
@@ -165,14 +166,10 @@ marked down below with an **\* asterisk**.
 
 > **connectionshift:** <**0** (default) | number between 0 and 255>
 
-    Influences the starting point of a connection's cabling algorithm (connectionmode variable). With connectionmode = 
-    full, the connectionshift variable has no effect. This variable has a circular nature and overflow will start back 
-    at the device with ID = 1.
+    Influences the starting point of a connection's cabling algorithm for a cluster. With 
+    connectionmode = full, the connectionshift variable has no effect. This variable has a 
+    circular nature and overflow will start back at the device with ID = 1.
 
-> **shiftable:** <**true** (default) | **false**>
-
-    Influences whether or not a cluster is susceptible to the connectionshift variable.
-    
 > **routing:** <**static** (default)>
 
     Influences how routers in the network fill their forwarding tables. OSPF/EIGRP/IS-IS may be added later.
