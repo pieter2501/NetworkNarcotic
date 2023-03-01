@@ -1,3 +1,14 @@
++=======+
+| TO-DO |
++=======+
+1) define inputs
+2) define outputs by first inspecting what .gns3 files look like
+  - if not too cryptic, translate directly into .gns3 file
+  - if too cryptic, first translate into output file literally describing the topology
+3) develop python translating engine
+4) if output file was used, develop GNS3 import plugin/additional translation step
+
+
 +==============+
 | INPUT FORMAT |
 +==============+
