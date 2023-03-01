@@ -60,7 +60,7 @@ router:
     - 'A'
     - 'B'
     - 'C'
-  iprange: 10.3.0.0/16
+  ipsummary: 10.3.0.0/16
 
 router:
   amount: 4
