@@ -179,6 +179,8 @@ marked down below with an **\* asterisk**.
                   non-seek connections from each cluster
     > exhaust *   multiple cables are applied between PARALLELS of devices from all clusters 
                   until the smallest cluster is exhausted
+    > spread      multiple cables are applied as far from each other as possible between devices
+                  from all clusters until the smallest cluster is exhausted
     > ...         (more to come)
 
 > **connectionshift:** <**0** (default) | number between 0 and 255>
