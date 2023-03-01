@@ -39,7 +39,7 @@ connection:
 connection:
   tag: 'B'
   ipsummary: 10.2.0.0/16
-  connectionmode: exhaust
+  connectionmode: parallel
 
 connection:
   tag: 'C'
@@ -177,7 +177,7 @@ marked down below with an **\* asterisk**.
     > full        every device in one cluster is connected to every device in the other cluster
     > seek *      a single cable is applied between the device with the lowest amount of 
                   non-seek connections from each cluster
-    > exhaust *   multiple cables are applied between PARALLELS of devices from all clusters 
+    > parallel *  multiple cables are applied between parallels of devices from all clusters 
                   until the smallest cluster is exhausted
     > spread      multiple cables are applied as far from each other as possible between devices
                   from all clusters until the smallest cluster is exhausted
