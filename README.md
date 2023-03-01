@@ -51,7 +51,7 @@ connection:
 router:
   connection: 'A'
   connection:
-    internet: yes
+    internet: true
     ipsummary: 165.25.0.0/16
 
 router:
