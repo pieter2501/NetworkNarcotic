@@ -11,7 +11,7 @@ Current procedure on how to use NetworkNarcotic:
         * checking for syntax errors,
         * checking for logic errors,
         * building the network topology in memory,
-        * serializing this network topology into an .gns3 project file,
+        * serializing this network topology into a .gns3 project file,
         * and producing an Ansible inventory file for the entire network.
 
 In the end, you will have a usable network in GNS3 against which you can apply Ansible plays for further configuration. 
