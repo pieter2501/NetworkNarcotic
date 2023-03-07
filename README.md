@@ -11,14 +11,10 @@ Current procedure on how to use NetworkNarcotic:
         * checking for syntax errors,
         * checking for logic errors,
         * building the network topology in memory,
-        * serializing this network topology into an output .yaml file,
+        * serializing this network topology into an .gns3 project file,
         * and producing an Ansible inventory file for the entire network.
-3) Feed this output .yaml file to the NetworkNarcotic GNS3 plugin
 
-In the end, you will have three items: 
-* your original input .yaml file,
-* an output .yaml file,
-* and a usable network in GNS3 against which you can apply Ansible plays for further configuration. 
+In the end, you will have a usable network in GNS3 against which you can apply Ansible plays for further configuration. 
 
 With NetworkNarcotic still being a prototype, the procedure up above is a little on the crude side and will probably be streamlined in the future, perhaps adding a GUI. That aside, it currently also only supports IPv4.
 
