@@ -169,7 +169,7 @@ marked down below with an **\* asterisk**.
     Opens a connection variable. This can be done on the highest .yaml level or inside a router 
     cluster.
 
-> **connectionmode:** <**single** (default) | **full** | **exhaust**>
+> **connectionmode:** <**single** (default) | **full** | **seek** | **parallel** | **spread**>
 
     Influences the cable layout of a connection.
 
