@@ -46,10 +46,11 @@ input:
 
   routers:
     - tag: rout_A
-      internet: true
-      ipsummary: 165.25.0.0/16
       connectedto:
         - conn_A
+        - tag: conn_gateway
+          internet: true
+          ipsummary: 165.25.0.0/16
 
     - tag: rout_B
       amount: 2
