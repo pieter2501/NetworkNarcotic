@@ -177,7 +177,7 @@ input:
     > fiber   use fiber cabling
     > serial  use serial cabling (not available for connections containing a switch)
 
-> **clustermode:** <**full** (default) | **single** | **loop** | **hubspoke**>
+> **clustermode:** <**full** (default) | **loop** | **line** | **hubspoke**>
 
     Influences the cable layout of a cluster.
 
