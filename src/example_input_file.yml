@@ -42,5 +42,5 @@ input:
         - conn_B
 
     - tag: rout_D
-      connectedteo:
+      connectedto:
         - conn_C

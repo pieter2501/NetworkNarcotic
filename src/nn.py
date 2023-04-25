@@ -66,34 +66,34 @@ with open(args.input, "r") as stream:
 
 objectDesiredSchemaBase = Schema({
     "tag": And(str, error="Key 'tag' defined incorrectly."),    
-    Optional("cables", default=1, error="Key 'cables' defined incorrectly."): And(int, lambda value: 1 <= value <= 3),
-    Optional("cabletype", default="auto", error="Key 'cabletype' defined incorrectly."): Or("auto", "copper", "fiber", "serial"), 
-    Optional("ipclass", default="A", error="Key 'ipclass' defined incorrectly."): Or("A", "B", "C"),
-    Optional("ipsummary", default="auto", error="Key 'ipsummary' defined incorrectly."): Or("auto", Regex("^(?:\d{1,3}\.){3}\d{1,3}\/(?:[1-9]|[1-2][0-9]|3[0-2])$"))
+    Optional("cables", default=1): And(int, lambda value: 1 <= value <= 3),
+    Optional("cabletype", default="auto"): Or("auto", "copper", "fiber", "serial"), 
+    Optional("ipclass", default="A"): Or("A", "B", "C"),
+    Optional("ipsummary", default="auto"): Or("auto", Regex("^(?:\d{1,3}\.){3}\d{1,3}\/(?:[1-9]|[1-2][0-9]|3[0-2])$"))
 })
 
 objectDesiredSchemaSwitchCluster = Schema({**objectDesiredSchemaBase.schema, **Schema({
-    Optional("amount", default=1, error="Key 'amount' defined incorrectly."): And(int, lambda value: 1 <= value <= 255),
-    Optional("clustermode", default="full", error="Key 'clustermode' defined incorrectly."): Or("full", "loop", "line", "hubspoke"),
-    Optional("connectionshift", default=0, error="Key 'connectionshift' defined incorrectly."): And(int, lambda value: 1 <= value <= 255)
+    Optional("amount", default=1): And(int, lambda value: 1 <= value <= 255),
+    Optional("clustermode", default="full"): Or("full", "loop", "line", "hubspoke"),
+    Optional("connectionshift", default=0): And(int, lambda value: 1 <= value <= 255)
 }).schema})
 
 objectDesiredSchemaConnection = Schema({**objectDesiredSchemaBase.schema, **Schema({
-    Optional("connectionmode", default="single", error="Key 'connectionmode' defined incorrectly."): Or("single", "full", "seek", "parallel", "spread"),
-    Optional("internet", default=False, error="Key 'internet' defined incorrectly."): bool,
-    Optional("shiftable", default=True, error="Key 'shiftable' defined incorrectly."): bool,
-    Optional("switches", default=None, error="Key 'switches' defined incorrectly."): [objectDesiredSchemaSwitchCluster]
+    Optional("connectionmode", default="single"): Or("single", "full", "seek", "parallel", "spread"),
+    Optional("internet", default=False): bool,
+    Optional("shiftable", default=True): bool,
+    Optional("switches", default=None): [objectDesiredSchemaSwitchCluster]
 }).schema})
 
 objectDesiredSchemaRouterCluster = Schema({**objectDesiredSchemaSwitchCluster.schema, **Schema({
-    Optional("routing", default="static", error="Key 'routing' defined incorrectly."): Or("static"),
-    Optional("connectedto", default=None, error="Key 'connectedto' defined incorrectly."): [Or(str, objectDesiredSchemaConnection)]
+    Optional("routing", default="static"): Or("static"),
+    Optional("connectedto", default=None): [Or(str, objectDesiredSchemaConnection)]
 }).schema})
 
 objectDesiredSchemaTotal = Schema({
     "input": {
-        "routers": And([objectDesiredSchemaRouterCluster], error="Key 'routers' defined incorrectly."),
-        Optional("connections", default=None, error="Key 'connections' defined incorrectly."): [objectDesiredSchemaConnection]
+        "routers": [objectDesiredSchemaRouterCluster],
+        Optional("connections", default=None): [objectDesiredSchemaConnection]
     }
 })
 
@@ -101,7 +101,23 @@ try:
     objectDesiredSchemaTotal.validate(object_INPUT_FILE)
     print('Input file is valid! Moving on.\n')
 except SchemaError as err:
-    print('Invalid input file. Did you follow the schema correctly?\n\n' + str(err))
+    print('Invalid input file. Did you follow the schema correctly? Check the following:\n\n' + str(err))
     exit()
 
-print('rest of program')
+"""
+###################################################################################################################
+Building the topology in-memory.
+
+This is where the input file actually gets translated into a network using the NetworkNarcotic algorithm.
+###################################################################################################################
+"""
+print('building topology')
+
+"""
+###################################################################################################################
+Building the .gns3 file.
+
+This is where the in-memory topology is converted into a usable .gns3 file.
+###################################################################################################################
+"""
+print('building .gns3')
