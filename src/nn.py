@@ -1,8 +1,10 @@
-import argparse  # Required for argument passing
-import yaml  # Required for reading input files
+import argparse             # Required for argument passing
+import yaml                 # Required for reading input files
+import networkx as nx       # Required for drawing topologies
+import json                 # Required for writing output files
+import copy                 # Required for creating shallow copies in for loops
 from schema import Schema, SchemaError, Optional, And, Or, Regex # Required for reading input files
-import json  # Required for writing output files
-from uuid import uuid4
+from uuid import uuid4      # Required for generating GNS3-compatible randoms
 
 """
 ###################################################################################################################
@@ -12,13 +14,13 @@ This section allows the user to specify arguments when calling the script from t
 ###################################################################################################################
 """
 parser = argparse.ArgumentParser(
-    prog='nn.py',
-    description='Converts a NetworkNarcotic input file into a .gns3 project file.',
-    epilog='https://github.com/pieter2501/NetworkNarcotic')
+    prog="nn.py",
+    description="Converts a NetworkNarcotic input file into a .gns3 project file.",
+    epilog="https://github.com/pieter2501/NetworkNarcotic")
 
-parser.add_argument('-n', '--name', default='My NetworkNarcotic generated network', help='the name of this project')
-parser.add_argument('-i', '--input', required=True, help='the input file')
-parser.add_argument('-o', '--output', required=True, help='the output file')
+parser.add_argument("-n", "--name", default="My NetworkNarcotic generated network", help="the name of this project")
+parser.add_argument("-i", "--input", required=True, help="the input file")
+parser.add_argument("-o", "--output", required=True, help="the output file")
 
 args = parser.parse_args()
 
@@ -29,9 +31,13 @@ Defining global variables.
 This section specifies variables that display repeated use throughout the script.
 ###################################################################################################################
 """
+str_IMAGE = "c2600-adventerprisek9-mz.124-15.T14.image"
+str_IMAGE_MD5 = "483e3a579a5144ec23f2f160d4b0c0e2"
+str_IMAGE_PLATFORM = "c2600"
+str_IMAGE_DEFAULT_SLOT = "C2600-MB-1E"
 object_INPUT_FILE = None
-object_MINIMAL_GNS3_PROJECT = {
-    "name": args.name,
+object_GNS3_PROJECT = {
+    "name": args.name + " (ID: " + str(uuid4()) + ")",
     "project_id": str(uuid4()),
     "revision": 5,
     "topology": {},
@@ -43,12 +49,12 @@ object_MINIMAL_GNS3_PROJECT = {
 ###################################################################################################################
 Defining functions.
 
-- test():
-  A test function.
+- tupleCalculateCoordinates():
+  Returns a tuple with the X and Y coordinate of a device.
 ###################################################################################################################
 """
-def test():
-    return 'test'
+def tupleCalculateCoordinates() -> tuple:
+    return (0, 0)
 
 """
 ###################################################################################################################
@@ -61,11 +67,11 @@ with open(args.input, "r") as stream:
     try:
         object_INPUT_FILE = yaml.safe_load(stream)
     except yaml.YAMLError as err:
-        print('Invalid .yml file. There is a syntax error.')
+        print("Invalid .yml file. There is a syntax error.")
         exit()
 
 objectDesiredSchemaBase = Schema({
-    "tag": And(str, error="Key 'tag' defined incorrectly."),    
+    "tag": str,    
     Optional("cables", default=1): And(int, lambda value: 1 <= value <= 3),
     Optional("cabletype", default="auto"): Or("auto", "copper", "fiber", "serial"), 
     Optional("ipclass", default="A"): Or("A", "B", "C"),
@@ -99,19 +105,193 @@ objectDesiredSchemaTotal = Schema({
 
 try:
     objectDesiredSchemaTotal.validate(object_INPUT_FILE)
-    print('Input file is valid! Moving on.\n')
+    print("Input file is valid! Moving on.")
 except SchemaError as err:
-    print('Invalid input file. Did you follow the schema correctly? Check the following:\n\n' + str(err))
+    print("Invalid input file. Did you follow the schema correctly? Check the following:\n\n" + str(err))
     exit()
 
 """
 ###################################################################################################################
 Building the topology in-memory.
 
-This is where the input file actually gets translated into a network using the NetworkNarcotic algorithm.
+This is where the input file actually gets translated into a network design using the NetworkNarcotic algorithm.
 ###################################################################################################################
 """
-print('building topology')
+objectRouterClusters = objectDesiredSchemaTotal.validate(object_INPUT_FILE).get("input").get("routers")
+objectConnections = objectDesiredSchemaTotal.validate(object_INPUT_FILE).get("input").get("connections")
+objectTemporaryGNS3Topology = {
+    "computes": [],
+    "drawings": [],
+    "links": [],
+    "nodes": []
+}
+objectGNS3RouterNodeScaffold = {
+    "compute_id": "local",
+    "name": None,
+    "node_id": None,
+    "node_type": "dynamips",
+    "x": None,
+    "y": None,
+    "symbol": ":/symbols/router.svg",
+    "properties": {
+        "image": str_IMAGE,
+        "image_md5sum": str_IMAGE_MD5,
+        "platform": str_IMAGE_PLATFORM,
+        "ram": 160,
+        "dynamips_id": None,
+        "slot0": str_IMAGE_DEFAULT_SLOT,
+        "slot1": "NM-16ESW",
+    }
+}
+objectGNS3LinkScaffold = {
+    "filters": {},
+    "link_id": None,
+    "link_style": {},
+    "nodes": [],
+    "suspend": False
+}
+
+# Handle the routers
+for objectRouterCluster in objectRouterClusters:
+    arrayRouters = []
+    for intCurrent in range(objectRouterCluster["amount"]):
+        # For each router cluster, mutiplied by the "amount" in that cluster, create a router
+        objectRouterNodePropertiesConstruction = objectGNS3RouterNodeScaffold["properties"].copy()
+        objectRouterNodePropertiesConstruction["dynamips_id"] = uuid4().int
+        objectRouterNodeConstruction = copy.deepcopy(objectGNS3RouterNodeScaffold)
+        objectRouterNodeConstruction["properties"] = objectRouterNodePropertiesConstruction
+        objectRouterNodeConstruction["name"] = objectRouterCluster["tag"] + "-id" + str(intCurrent + 1)
+        objectRouterNodeConstruction["node_id"] = str(uuid4())
+        objectRouterNodeConstruction["x"] = tupleCalculateCoordinates()[0] # TODO
+        objectRouterNodeConstruction["y"] = tupleCalculateCoordinates()[1] # TODO
+
+        # Add the created router to the topology
+        arrayRouters.append(objectRouterNodeConstruction["node_id"])
+        objectTemporaryGNS3Topology["nodes"].append(objectRouterNodeConstruction)
+
+    if (objectRouterCluster["amount"] > 1):
+        # For each router cluster, apply cables in case necessary
+        match objectRouterCluster["clustermode"]:
+            case "full":
+                # Define the links
+                arrayDesiredLinks = []
+                for stringNodeStart in arrayRouters:
+                    for stringNodeEnd in arrayRouters:
+                        if (stringNodeStart != stringNodeEnd):
+                            if (not (stringNodeEnd, stringNodeStart) in arrayDesiredLinks):
+                                arrayDesiredLinks.append((stringNodeStart, stringNodeEnd))
+
+                # Write the links
+                arrayFreePorts = []
+                for stringNode in arrayRouters:
+                    arrayFreePorts.append([stringNode, 0])
+                for tupleDesiredLink in arrayDesiredLinks:
+                    objectLinkConstruction = copy.deepcopy(objectGNS3LinkScaffold)
+                    objectLinkConstruction["link_id"] = str(uuid4())
+                    def addNodeToLink(stringNode):
+                        for arrayFreePort in arrayFreePorts:
+                            if (stringNode == arrayFreePort[0]):
+                                if (arrayFreePort[1] > 16):
+                                    print("One of your clusters exceeds the 16-port limit on one of its devices. Aborting.") # Depends on NM-16ESW's 16 slot limit
+                                    exit()
+                                objectLinkConstruction["nodes"].append({"adapter_number": 1, "port_number": arrayFreePort[1], "node_id": arrayFreePort[0]})
+                                arrayFreePort[1] += 1
+                                break
+                    addNodeToLink(tupleDesiredLink[0])
+                    addNodeToLink(tupleDesiredLink[1])
+                    objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
+            case "loop":
+                # Define the links
+                arrayDesiredLinks = []
+                stringEndPoint = arrayRouters[1]
+                intCounter = 0
+                for stringNode in arrayRouters:
+                    if (intCounter != len(arrayRouters)):
+                        arrayDesiredLinks.append((stringNode, arrayRouters[(intCounter + 1) % len(arrayRouters)]))
+                        intCounter += 1
+                
+                # Write the links
+                arrayFreePorts = []
+                for stringNode in arrayRouters:
+                    arrayFreePorts.append([stringNode, 0])
+                for tupleDesiredLink in arrayDesiredLinks:
+                    objectLinkConstruction = copy.deepcopy(objectGNS3LinkScaffold)
+                    objectLinkConstruction["link_id"] = str(uuid4())
+                    def addNodeToLink(stringNode):
+                        for arrayFreePort in arrayFreePorts:
+                            if (stringNode == arrayFreePort[0]):
+                                if (arrayFreePort[1] > 16):
+                                    print("One of your clusters exceeds the 16-port limit on one of its devices. Aborting.") # Depends on NM-16ESW's 16 slot limit
+                                    exit()
+                                objectLinkConstruction["nodes"].append({"adapter_number": 1, "port_number": arrayFreePort[1], "node_id": arrayFreePort[0]})
+                                arrayFreePort[1] += 1
+                                break
+                    addNodeToLink(tupleDesiredLink[0])
+                    addNodeToLink(tupleDesiredLink[1])
+                    objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
+            case "line":
+                # Define the links
+                arrayDesiredLinks = []
+                stringEndPoint = arrayRouters[1]
+                intCounter = 0
+                for stringNode in arrayRouters:
+                    if (intCounter != len(arrayRouters) -1):
+                        arrayDesiredLinks.append((stringNode, arrayRouters[(intCounter + 1) % len(arrayRouters)]))
+                        intCounter += 1
+
+                # Write the links
+                arrayFreePorts = []
+                for stringNode in arrayRouters:
+                    arrayFreePorts.append([stringNode, 0])
+                for tupleDesiredLink in arrayDesiredLinks:
+                    objectLinkConstruction = copy.deepcopy(objectGNS3LinkScaffold)
+                    objectLinkConstruction["link_id"] = str(uuid4())
+                    def addNodeToLink(stringNode):
+                        for arrayFreePort in arrayFreePorts:
+                            if (stringNode == arrayFreePort[0]):
+                                if (arrayFreePort[1] > 16):
+                                    print("One of your clusters exceeds the 16-port limit on one of its devices. Aborting.") # Depends on NM-16ESW's 16 slot limit
+                                    exit()
+                                objectLinkConstruction["nodes"].append({"adapter_number": 1, "port_number": arrayFreePort[1], "node_id": arrayFreePort[0]})
+                                arrayFreePort[1] += 1
+                                break
+                    addNodeToLink(tupleDesiredLink[0])
+                    addNodeToLink(tupleDesiredLink[1])
+                    objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
+            case "hubspoke":
+                # Define the links
+                arrayDesiredLinks = []
+                stringHubNode = arrayRouters[0]
+                for stringNode in arrayRouters:
+                    if (stringNode != stringHubNode):
+                        arrayDesiredLinks.append((stringHubNode, stringNode))
+
+                # Write the links
+                arrayFreePorts = []
+                for stringNode in arrayRouters:
+                    arrayFreePorts.append([stringNode, 0])
+                for tupleDesiredLink in arrayDesiredLinks:
+                    objectLinkConstruction = copy.deepcopy(objectGNS3LinkScaffold)
+                    objectLinkConstruction["link_id"] = str(uuid4())
+                    def addNodeToLink(stringNode):
+                        for arrayFreePort in arrayFreePorts:
+                            if (stringNode == arrayFreePort[0]):
+                                if (arrayFreePort[1] > 16):
+                                    print("One of your clusters exceeds the 16-port limit on one of its devices. Aborting.") # Depends on NM-16ESW's 16 slot limit
+                                    exit()
+                                objectLinkConstruction["nodes"].append({"adapter_number": 1, "port_number": arrayFreePort[1], "node_id": arrayFreePort[0]})
+                                arrayFreePort[1] += 1
+                                break
+                    addNodeToLink(tupleDesiredLink[0])
+                    addNodeToLink(tupleDesiredLink[1])
+                    objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
+
+# Handle the connections
+# TODO
+
+graphTest = nx.Graph()
+
+print("Done building in-memory topology.")
 
 """
 ###################################################################################################################
@@ -120,4 +300,10 @@ Building the .gns3 file.
 This is where the in-memory topology is converted into a usable .gns3 file.
 ###################################################################################################################
 """
-print('building .gns3')
+object_GNS3_PROJECT["topology"] = objectTemporaryGNS3Topology
+file = open(args.output, "a")
+file.truncate(0)
+file.write(json.dumps(object_GNS3_PROJECT, indent=4))
+file.close()
+
+print("Done building .gns3 file. Open it in GNS3, but make sure the following router image is installed: " + str_IMAGE)

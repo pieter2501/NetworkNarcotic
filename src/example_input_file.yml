@@ -1,46 +1,46 @@
 ---
 input:
   connections:
-    - tag: conn_A
+    - tag: conn-A
       ipsummary: 10.1.0.0/16
       connectionmode: full
       cables: 2
 
-    - tag: conn_B
+    - tag: conn-B
       ipsummary: 10.2.0.0/16
       connectionmode: parallel
 
-    - tag: conn_C
+    - tag: conn-C
       switches:
-        - tag: swit_A
+        - tag: swit-A
           amount: 4
           clustermode: hubspoke
           ipsummary: 192.168.1.0/24
 
   routers:
-    - tag: rout_A
+    - tag: rout-A
       connectedto:
-        - conn_A
-        - tag: conn_gateway
+        - conn-A
+        - tag: conn-gateway
           internet: true
           ipsummary: 165.25.0.0/16
 
-    - tag: rout_B
+    - tag: rout-B
       amount: 2
       ipsummary: 10.3.0.0/16
       connectedto:
-        - conn_A
-        - conn_B
-        - conn_C
+        - conn-A
+        - conn-B
+        - conn-C
 
-    - tag: rout_C
+    - tag: rout-C
       amount: 4
       ipsummary: 10.4.0.0/16
       clustermode: line
       connectionshift: 1
       connectedto:
-        - conn_B
+        - conn-B
 
-    - tag: rout_D
+    - tag: rout-D
       connectedto:
-        - conn_C
+        - conn-C
