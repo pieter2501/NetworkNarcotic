@@ -51,13 +51,18 @@ Defining functions.
 
 - tupleCalculateCoordinates():
   Returns a tuple with the X and Y coordinate of a device.
+
+- addNodeToLink():
+  Adds a node (router or switch) to a link, meaning one of its two endpoints.
+
+- writeClusterLinks():
+  Write out the internal links of a cluster, influenced by the clustermode variable.
 ###################################################################################################################
 """
 def tupleCalculateCoordinates() -> tuple:
     return (0, 0)
 
-
-def addNodeToLink(stringNode, objectLinkConstruction, arrayFreePortPositions):
+def addNodeToLink(stringNode, objectLinkConstruction, arrayFreePortPositions) -> None:
     for arrayFreePort in arrayFreePortPositions:
         if (stringNode == arrayFreePort[0]):
             if (arrayFreePort[1] > 16):
@@ -66,6 +71,14 @@ def addNodeToLink(stringNode, objectLinkConstruction, arrayFreePortPositions):
             objectLinkConstruction["nodes"].append({"adapter_number": 1, "port_number": arrayFreePort[1], "node_id": arrayFreePort[0]})
             arrayFreePort[1] += 1
             break
+
+def writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, arrayFreePortPositions, objectTemporaryGNS3Topology) -> None:
+    for tupleDesiredLink in arrayDesiredLinks:
+        objectLinkConstruction = copy.deepcopy(objectGNS3LinkScaffold)
+        objectLinkConstruction["link_id"] = str(uuid4())
+        addNodeToLink(tupleDesiredLink[0], objectLinkConstruction, arrayFreePortPositions)
+        addNodeToLink(tupleDesiredLink[1], objectLinkConstruction, arrayFreePortPositions)
+        objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
 
 """
 ###################################################################################################################
@@ -170,14 +183,6 @@ objectGNS3LinkScaffold = {
     "suspend": False
 }
 
-# Handle the connections
-arrayConnections = []
-for objectConnection in objectConnections:
-    for intCurrent in range(objectConnection["cables"]):
-        arrayConnections.append([objectConnection["tag"], str(uuid4())])
-
-print(arrayConnections)
-
 # Handle the routers
 for objectRouterCluster in objectRouterClusters:
     arrayRouters = []
@@ -214,41 +219,7 @@ for objectRouterCluster in objectRouterClusters:
                 print("Router cluster with tag '" + objectRouterCluster["tag"] + "' is referring to a non-existent connection. Aborting.")
                 exit()
         
-        for arrayConnection in arrayConnections:
-            if (arrayConnection[0] == objectDesiredConnection["tag"]):
-                match objectDesiredConnection["connectionmode"]:
-                    case "single":
-                        # Define the links
-                        arrayDesiredNodes = []
-                        arrayDesiredNodes.append(arrayRouters[0])
-
-                        # Write the links
-                        for stringDesiredNode in arrayDesiredNodes:
-                            booleanLinkAlreadyExists = False
-                            for objectLink in objectTemporaryGNS3Topology["links"]:
-                                if (objectLink["link_id"] == arrayConnection[1]):
-                                    booleanLinkAlreadyExists = True
-                                    break
-
-                            if (booleanLinkAlreadyExists == False):
-                                objectLinkConstruction = copy.deepcopy(objectGNS3LinkScaffold)
-                                objectLinkConstruction["link_id"] = arrayConnection[1]
-                                addNodeToLink(stringDesiredNode, objectLinkConstruction, arrayFreePortPositions)
-                                objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
-                            else:
-                                for objectLink in objectTemporaryGNS3Topology["links"]:
-                                    if (objectLink["link_id"] == arrayConnection[1]):
-                                        objectLinkConstruction = objectLink
-                                        addNodeToLink(stringDesiredNode, objectLinkConstruction, arrayFreePortPositions)
-                                        break
-                    case "full":
-                        temp = None
-                    case "seek":
-                        temp = None
-                    case "parallel":
-                        temp = None
-                    case "spread":
-                        temp = None
+        # TODO
         
     if (objectRouterCluster["amount"] > 1):
         # For each router cluster, apply cables in case necessary
@@ -264,12 +235,7 @@ for objectRouterCluster in objectRouterClusters:
                                     arrayDesiredLinks.append((stringNodeStart, stringNodeEnd))
 
                 # Write the links
-                for tupleDesiredLink in arrayDesiredLinks:
-                    objectLinkConstruction = copy.deepcopy(objectGNS3LinkScaffold)
-                    objectLinkConstruction["link_id"] = str(uuid4())
-                    addNodeToLink(tupleDesiredLink[0], objectLinkConstruction, arrayFreePortPositions)
-                    addNodeToLink(tupleDesiredLink[1], objectLinkConstruction, arrayFreePortPositions)
-                    objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
+                writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, arrayFreePortPositions, objectTemporaryGNS3Topology)
             case "loop":
                 # Define the links
                 arrayDesiredLinks = []
@@ -282,30 +248,20 @@ for objectRouterCluster in objectRouterClusters:
                         intCounter += 1
                 
                 # Write the links
-                for tupleDesiredLink in arrayDesiredLinks:
-                    objectLinkConstruction = copy.deepcopy(objectGNS3LinkScaffold)
-                    objectLinkConstruction["link_id"] = str(uuid4())
-                    addNodeToLink(tupleDesiredLink[0], objectLinkConstruction, arrayFreePortPositions)
-                    addNodeToLink(tupleDesiredLink[1], objectLinkConstruction, arrayFreePortPositions)
-                    objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
+                writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, arrayFreePortPositions, objectTemporaryGNS3Topology)
             case "line":
                 # Define the links
                 arrayDesiredLinks = []
                 stringEndPoint = arrayRouters[1]
                 intCounter = 0
                 for stringNode in arrayRouters:
-                    if (intCounter != len(arrayRouters) -1):
+                    if (intCounter != len(arrayRouters) -1): # Notice the -1; the "cut" in the loop
                         for intCurrent in range (objectRouterCluster["cables"]):
                             arrayDesiredLinks.append((stringNode, arrayRouters[(intCounter + 1) % len(arrayRouters)]))
                         intCounter += 1
 
                 # Write the links
-                for tupleDesiredLink in arrayDesiredLinks:
-                    objectLinkConstruction = copy.deepcopy(objectGNS3LinkScaffold)
-                    objectLinkConstruction["link_id"] = str(uuid4())
-                    addNodeToLink(tupleDesiredLink[0], objectLinkConstruction, arrayFreePortPositions)
-                    addNodeToLink(tupleDesiredLink[1], objectLinkConstruction, arrayFreePortPositions)
-                    objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
+                writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, arrayFreePortPositions, objectTemporaryGNS3Topology)
             case "hubspoke":
                 # Define the links
                 arrayDesiredLinks = []
@@ -316,12 +272,7 @@ for objectRouterCluster in objectRouterClusters:
                             arrayDesiredLinks.append((stringHubNode, stringNode))
 
                 # Write the links
-                for tupleDesiredLink in arrayDesiredLinks:
-                    objectLinkConstruction = copy.deepcopy(objectGNS3LinkScaffold)
-                    objectLinkConstruction["link_id"] = str(uuid4())
-                    addNodeToLink(tupleDesiredLink[0], objectLinkConstruction, arrayFreePortPositions)
-                    addNodeToLink(tupleDesiredLink[1], objectLinkConstruction, arrayFreePortPositions)
-                    objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
+                writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, arrayFreePortPositions, objectTemporaryGNS3Topology)
 
 graphTest = nx.Graph()
 

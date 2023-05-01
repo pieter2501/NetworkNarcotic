@@ -26,8 +26,8 @@ input:
           ipsummary: 165.25.0.0/16
 
     - tag: rout-B
-      amount: 4
-      cables: 3
+      amount: 3
+      cables: 2
       ipsummary: 10.3.0.0/16
       connectedto:
         - conn-A
