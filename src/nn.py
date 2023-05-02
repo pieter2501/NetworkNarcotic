@@ -316,16 +316,16 @@ for objectRouterCluster in objectRouterClusters:
 
             match objectDesiredConnection["connectionmode"]:
                 case "single":
+                    stringFirstRouter = None
+                    for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
+                        if (arrayDesiredRouterCluster[0] == objectRouterCluster["tag"]):
+                            stringFirstRouter = arrayDesiredRouterCluster[1][0][0]
+                            break
+
                     booleanConnectionIsKnown = False
                     for arrayDesiredConnection in arrayDesiredConnections:
                         if (arrayDesiredConnection[0] == objectDesiredConnection["tag"]):
                             booleanConnectionIsKnown = True
-                            break
-
-                    stringFirstRouter = None
-                    for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
-                        if (arrayDesiredRouterCluster[0] == objectRouterCluster["tag"]):
-                            stringFirstRouter = arrayDesiredRouterCluster[1][0]
                             break
 
                     if (booleanConnectionIsKnown == False):
@@ -345,16 +345,19 @@ for objectRouterCluster in objectRouterClusters:
 
 # Apply the connections
 for arrayDesiredConnection in arrayDesiredConnections:
-    #print(arrayDesiredConnection)
     for objectConnection in objectConnections:
         if (objectConnection["tag"] == arrayDesiredConnection[0]):
+            if (len(arrayDesiredConnection[1]) > 2):
+                print("Hooking more than two router clusters to a connection requires a switch cluster. Aborting.")
+                exit()
+
             for intCurrent in range(objectConnection["cables"]):
                 objectLinkConstruction = copy.deepcopy(objectGNS3LinkScaffold)
                 objectLinkConstruction["link_id"] = str(uuid4())
-                #addNodeToLink(arrayDesiredConnection[1][0], objectLinkConstruction, arrayFreeRouterPortPositions)
-                #addNodeToLink(arrayDesiredConnection[1][1], objectLinkConstruction, arrayFreeRouterPortPositions)
-                #objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
-        break
+                addNodeToLink(arrayDesiredConnection[1][0], objectLinkConstruction, arrayDesiredRouterClusters)
+                addNodeToLink(arrayDesiredConnection[1][1], objectLinkConstruction, arrayDesiredRouterClusters)
+                objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
+            break
 
 # Handle coordinates
 # TODO
