@@ -84,7 +84,7 @@ As seen in the picture,
 NetworkNarcotic input files work with a concept called _clusters_. A cluster is simply a unit of one or more devices. In the example input file up above, you can find 4 router clusters and 1 switch cluster. Clusters and where to find them in an input file:
 
 - Router clusters reside in the **routers** variable.
-- Switch clusters reside in the connection definition of a **connections** variable.
+- Switch clusters reside in a connection definition of the **connections** variable.
 
 You can use a connection if you want to connect clusters to each other or connect a stub network to a router. These connections can be direct (one-to-one) or contain switches, in which case a switch cluster needs to be added inside the desired connection definition. If more than 2 router clusters need to be connected, the connection definition should contain a switch cluster.
 
