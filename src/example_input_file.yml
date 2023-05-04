@@ -11,6 +11,7 @@ input:
       connectionmode: parallel
 
     - tag: conn_C
+      cables: 3
       switches:
         - tag: swit_A
           amount: 4
@@ -24,7 +25,7 @@ input:
         - conn_A
 
     - tag: rout_B
-      amount: 2
+      amount: 3
       ipsummary: 10.3.0.0/16
       connectedto:
         - conn_A

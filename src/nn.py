@@ -86,17 +86,27 @@ def writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, arrayDesiredRou
         objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
 
 def standardizeConnection(connection, objectConnections, objectRouterCluster) -> dict:
-    returnValue = connection;
-    if (type(connection) is str):
-        booleanFoundConnection = False
-        for objectConnection in objectConnections:
-            if (objectConnection["tag"] == connection):
-                returnValue = objectConnection
-                booleanFoundConnection = True
-                break
-        if (booleanFoundConnection == False):
-            print("Router cluster with tag '" + objectRouterCluster["tag"] + "' is referring to a non-existent connection. Aborting.")
-            exit()
+    returnValue = connection
+
+    booleanFoundConnection = False
+    for objectConnection in objectConnections:
+        if (objectConnection["tag"] == connection):
+            returnValue = objectConnection
+            booleanFoundConnection = True
+            break
+    if (booleanFoundConnection == False):
+        print("Router cluster with tag '" + objectRouterCluster["tag"] + "' is referring to a non-existent connection. Aborting.")
+        exit()
+
+    return returnValue
+
+def standardizeConnectionMinimal(connection, objectConnections) -> dict:
+    returnValue = connection
+
+    for objectConnection in objectConnections:
+        if (objectConnection["tag"] == connection):
+            returnValue = objectConnection
+            break
 
     return returnValue
 
@@ -299,65 +309,113 @@ for objectRouterCluster in objectRouterClusters:
                 # Write the links
                 writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, arrayDesiredRouterClusters, objectTemporaryGNS3Topology)
 
-# Handle connections
-arrayDesiredConnections = []
+# Find connection elements
+arrayConnectionElements = [] # Holds per connection tag an array of involved router clusters
 for objectRouterCluster in objectRouterClusters:
-    arrayClusterConnections = []
     if (objectRouterCluster["connectedto"] != None):
+        arrayClusterConnections = []
         for connection in objectRouterCluster["connectedto"]:
             objectDesiredConnection = standardizeConnection(connection, objectConnections, objectRouterCluster)
-            
+
+            # Check if the connection tag hasn't been seen before in this router cluster
             for arrayClusterConnection in arrayClusterConnections:
                 if (arrayClusterConnection == objectDesiredConnection["tag"]):
                     print("Router cluster with tag " + objectRouterCluster["tag"] + " is referring to the same connection more than once. Aborting.")
                     exit()
-
             arrayClusterConnections.append(objectDesiredConnection["tag"])
 
-            match objectDesiredConnection["connectionmode"]:
-                case "single":
-                    stringFirstRouter = None
-                    for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
-                        if (arrayDesiredRouterCluster[0] == objectRouterCluster["tag"]):
-                            stringFirstRouter = arrayDesiredRouterCluster[1][0][0]
-                            break
+            # Find all other router clusters that need this connection
+            for objectRouterClusterNest in objectRouterClusters:
+                    if (objectRouterClusterNest["tag"] != objectRouterCluster["tag"] and objectRouterClusterNest["connectedto"] != None):
+                        for connectionNest in objectRouterClusterNest["connectedto"]:
+                            objectDesiredConnectionNest = standardizeConnection(connectionNest, objectConnections, objectRouterClusterNest)
+                            if (objectDesiredConnectionNest["tag"] == objectDesiredConnection["tag"]):
+                                booleanConnectionIsKnown = False
+                                for arrayConnectionElement in arrayConnectionElements:
+                                    if (arrayConnectionElement[0] == objectDesiredConnection["tag"]):
+                                        booleanConnectionIsKnown = True
+                                        break
 
-                    booleanConnectionIsKnown = False
+                                if (booleanConnectionIsKnown == False):
+                                    arrayConnectionElements.append([objectDesiredConnection["tag"], [objectRouterCluster["tag"], objectRouterClusterNest["tag"]]])
+                                else:
+                                    for arrayConnectionElement in arrayConnectionElements:
+                                        if (arrayConnectionElement[0] == objectDesiredConnection["tag"]):
+                                            if (objectRouterCluster["tag"] not in arrayConnectionElement[1]):
+                                                arrayConnectionElement[1].append(objectRouterCluster["tag"])
+                                            if (objectRouterClusterNest["tag"] not in arrayConnectionElement[1]):
+                                                arrayConnectionElement[1].append(objectRouterClusterNest["tag"])
+
+# Define connections
+arrayDesiredConnections = [] # Holds per connection tag an array of arrays, the latter containing two node_id's
+for arrayConnectionElement in arrayConnectionElements:
+    if (len(arrayConnectionElement[1]) > 2):
+        print("Hooking more than two router clusters to a connection requires a switch cluster. Aborting. TODO")
+        exit()
+
+    objectDesiredConnection = standardizeConnectionMinimal(arrayConnectionElement[0], objectConnections)
+
+    # Do the magic
+    match objectDesiredConnection["connectionmode"]:
+        case "single":
+            # Define the nodes
+            arrayDesiredNodes = []
+            for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
+                for stringRouterClusterTag in arrayConnectionElement[1]:
+                    if (arrayDesiredRouterCluster[0] == stringRouterClusterTag):
+                        arrayDesiredNodes.append(arrayDesiredRouterCluster[1][0][0])
+                        break
+
+            # Append the nodes
+            booleanConnectionIsKnown = False
+            for arrayDesiredConnection in arrayDesiredConnections:
+                if (arrayDesiredConnection[0] == objectDesiredConnection["tag"]):
+                    booleanConnectionIsKnown = True
+                    break
+
+            if (booleanConnectionIsKnown == False):
+                arrayDesiredConnections.append([objectDesiredConnection["tag"], [arrayDesiredNodes]])
+            else:
+                for arrayDesiredConnection in arrayDesiredConnections:
+                    if (arrayDesiredConnection[0] == objectDesiredConnection["tag"]):
+                        arrayDesiredConnection[1].append(arrayDesiredNodes)
+                    break
+        case "full":
+            # Define the nodes
+            arrayDesiredNodes = []
+            for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
+                if (arrayDesiredRouterCluster[0] == objectRouterCluster["tag"]):
+                    for arrayRouter in arrayDesiredRouterCluster[1]:
+                        arrayDesiredNodes.append(arrayRouter[0])
+                    break
+
+            # Append the nodes
+            for stringNode in arrayDesiredNodes:
+                if (booleanConnectionIsKnown == False):
+                    arrayDesiredConnections.append([objectDesiredConnection["tag"], [stringNode]])
+                else:
                     for arrayDesiredConnection in arrayDesiredConnections:
                         if (arrayDesiredConnection[0] == objectDesiredConnection["tag"]):
-                            booleanConnectionIsKnown = True
-                            break
+                            arrayDesiredConnection[1].append(stringNode)
+                        break
+        case "seek":
+            temp = None
+        case "parallel":
+            temp = None
+        case "spread":
+            temp = None
 
-                    if (booleanConnectionIsKnown == False):
-                        arrayDesiredConnections.append([objectDesiredConnection["tag"], [stringFirstRouter]])
-                    else:
-                        for arrayDesiredConnection in arrayDesiredConnections:
-                            if (arrayDesiredConnection[0] == objectDesiredConnection["tag"]):
-                                arrayDesiredConnection[1].append(stringFirstRouter)
-                case "full":
-                    temp = None
-                case "seek":
-                    temp = None
-                case "parallel":
-                    temp = None
-                case "spread":
-                    temp = None
-
-# Apply the connections
+# Apply connections
 for arrayDesiredConnection in arrayDesiredConnections:
     for objectConnection in objectConnections:
         if (objectConnection["tag"] == arrayDesiredConnection[0]):
-            if (len(arrayDesiredConnection[1]) > 2):
-                print("Hooking more than two router clusters to a connection requires a switch cluster. Aborting.")
-                exit()
-
-            for intCurrent in range(objectConnection["cables"]):
-                objectLinkConstruction = copy.deepcopy(objectGNS3LinkScaffold)
-                objectLinkConstruction["link_id"] = str(uuid4())
-                addNodeToLink(arrayDesiredConnection[1][0], objectLinkConstruction, arrayDesiredRouterClusters)
-                addNodeToLink(arrayDesiredConnection[1][1], objectLinkConstruction, arrayDesiredRouterClusters)
-                objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
-            break
+            for arrayDesiredLink in arrayDesiredConnection[1]:
+                for intCurrent in range(objectConnection["cables"]):
+                    objectLinkConstruction = copy.deepcopy(objectGNS3LinkScaffold)
+                    objectLinkConstruction["link_id"] = str(uuid4())
+                    addNodeToLink(arrayDesiredLink[0], objectLinkConstruction, arrayDesiredRouterClusters)
+                    addNodeToLink(arrayDesiredLink[1], objectLinkConstruction, arrayDesiredRouterClusters)
+                    objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
 
 # Handle coordinates
 # TODO
