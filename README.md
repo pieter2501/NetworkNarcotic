@@ -159,7 +159,7 @@ input:
 
     Opens a connections variable which contains connection definitions.
 
-> **connectionmode:** <**single** (default) | **full** | **parallel** | **spread**>
+> **connectionmode:** <**single** (default) | **full** | **parallel**>
 
     Influences the cable layout of a connection.
 
@@ -167,8 +167,6 @@ input:
     > full        every device in one cluster is connected to every device in the other cluster
     > parallel *  multiple cables are applied between parallels of devices from all clusters 
                   until the smallest cluster is exhausted
-    > spread      multiple cables are applied as far from each other as possible between devices
-                  from all clusters until the smallest cluster is exhausted
     > ...         (more to come)
 
 > **connectionshift:** <**0** (default) | number between 0 and 255>
