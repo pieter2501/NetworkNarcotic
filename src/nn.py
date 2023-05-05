@@ -82,7 +82,8 @@ def getGatewayInterface() -> str:
         if ping_process.returncode == 0:
             return strInterface
     
-    return None
+    print("You are trying to create a gateway while your own system doesn't seem to have access to the internet. Aborting.")
+    exit()
 
 def tupleCalculateCoordinates() -> tuple:
     return (0, 0)
@@ -148,9 +149,9 @@ with open(args.input, "r") as stream:
 
 objectDesiredSchemaBase = Schema({
     "tag": str,    
-    Optional("cables", default=1): And(int, lambda value: 1 <= value <= 3),
-    Optional("ipclass", default="A"): Or("A", "B", "C"),
-    Optional("ipsummary", default="auto"): Or("auto", Regex("^(?:\d{1,3}\.){3}\d{1,3}\/(?:[1-9]|[1-2][0-9]|3[0-2])$"))
+    Optional("cables", default=1): And(int, lambda value: 1 <= value <= 3)
+    #Optional("ipclass", default="A"): Or("A", "B", "C"),
+    #Optional("ipsummary", default="auto"): Or("auto", Regex("^(?:\d{1,3}\.){3}\d{1,3}\/(?:[1-9]|[1-2][0-9]|3[0-2])$"))
 })
 
 objectDesiredSchemaSwitchCluster = Schema({**objectDesiredSchemaBase.schema, **Schema({
@@ -162,7 +163,7 @@ objectDesiredSchemaSwitchCluster = Schema({**objectDesiredSchemaBase.schema, **S
 objectDesiredSchemaConnection = Schema({**objectDesiredSchemaBase.schema, **Schema({
     Optional("connectionmode", default="single"): Or("single", "full", "parallel"),
     Optional("shiftable", default=True): bool,
-    Optional("switches", default=None): [objectDesiredSchemaSwitchCluster]
+    Optional("switches", default=None): objectDesiredSchemaSwitchCluster
 }).schema})
 
 objectDesiredSchemaRouterCluster = Schema({**objectDesiredSchemaSwitchCluster.schema, **Schema({
@@ -421,6 +422,7 @@ for objectRouterCluster in objectRouterClusters:
 arrayDesiredConnections = [] # Holds per connection tag an array of tuples, the latter containing two node_id's
 for arrayConnectionElement in arrayConnectionElements:
     if (len(arrayConnectionElement[1]) > 2):
+        print(arrayConnectionElement[0])
         print("Hooking more than two router clusters to a connection requires a switch cluster. Aborting. TODO")
         exit()
 
