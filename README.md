@@ -159,14 +159,12 @@ input:
 
     Opens a connections variable which contains connection definitions.
 
-> **connectionmode:** <**single** (default) | **full** | **seek** | **parallel** | **spread**>
+> **connectionmode:** <**single** (default) | **full** | **parallel** | **spread**>
 
     Influences the cable layout of a connection.
 
     > single *    a single cable is applied between ONE device from each cluster
     > full        every device in one cluster is connected to every device in the other cluster
-    > seek *      a single cable is applied between the device with the lowest amount of 
-                  non-seek connections from each cluster
     > parallel *  multiple cables are applied between parallels of devices from all clusters 
                   until the smallest cluster is exhausted
     > spread      multiple cables are applied as far from each other as possible between devices
