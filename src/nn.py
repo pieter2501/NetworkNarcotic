@@ -258,7 +258,7 @@ for objectRouterCluster in objectRouterClusters:
                                         for intCurrent in range (objectRouterCluster["cables"]):
                                             arrayDesiredLinks.append((arrayDesiredRouterSTART[0], arrayDesiredRouterEND[0]))
                         break
-                
+
                 # Write the links
                 writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, arrayDesiredRouterClusters, objectTemporaryGNS3Topology)
             case "loop":
@@ -359,38 +359,45 @@ for arrayConnectionElement in arrayConnectionElements:
         case "single":
             # Define the links
             arrayDesiredLinks = []
-            arrayNodes = []
+            arrayClusterA = []
+            arrayClusterB = []
             for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
                 for stringRouterClusterTag in arrayConnectionElement[1]:
-                    if (arrayDesiredRouterCluster[0] == stringRouterClusterTag):
-                        arrayNodes.append(arrayDesiredRouterCluster[1][0])
+                    if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][0]):
+                        arrayClusterA.append(arrayDesiredRouterCluster[1][0])
                         break
-            for arrayDesiredRouterSTART in arrayNodes:
-                for arrayDesiredRouterEND in arrayNodes:
+                    if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][1]):
+                        arrayClusterB.append(arrayDesiredRouterCluster[1][0])
+                        break
+            for arrayDesiredRouterSTART in arrayClusterA:
+                for arrayDesiredRouterEND in arrayClusterB:
                     if (arrayDesiredRouterSTART[0] != arrayDesiredRouterEND[0]):
                         if (not (arrayDesiredRouterEND[0], arrayDesiredRouterSTART[0]) in arrayDesiredLinks):
                             arrayDesiredLinks.append((arrayDesiredRouterSTART[0], arrayDesiredRouterEND[0]))
 
 
             # Append the links
-            arrayDesiredConnections.append([objectDesiredConnection["tag"], arrayDesiredLinks])
+            arrayDesiredConnections.append([arrayConnectionElement[0], arrayDesiredLinks])
         case "full":
             # Define the links
             arrayDesiredLinks = []
-            arrayNodes = []
+            arrayClusterA = []
+            arrayClusterB = []
             for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
-                for stringRouterClusterTag in arrayConnectionElement[1]:
-                    if (arrayDesiredRouterCluster[0] == stringRouterClusterTag):
-                        for arrayDesiredRouter in arrayDesiredRouterCluster[1]:
-                            arrayNodes.append(arrayDesiredRouter)
-            for arrayDesiredRouterSTART in arrayNodes:
-                for arrayDesiredRouterEND in arrayNodes:
+                if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][0]):
+                    for arrayDesiredRouter in arrayDesiredRouterCluster[1]:
+                        arrayClusterA.append(arrayDesiredRouter)
+                if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][1]):
+                    for arrayDesiredRouter in arrayDesiredRouterCluster[1]:
+                        arrayClusterB.append(arrayDesiredRouter)
+            for arrayDesiredRouterSTART in arrayClusterA:
+                for arrayDesiredRouterEND in arrayClusterB:
                     if (arrayDesiredRouterSTART[0] != arrayDesiredRouterEND[0]):
                         if (not (arrayDesiredRouterEND[0], arrayDesiredRouterSTART[0]) in arrayDesiredLinks):
                             arrayDesiredLinks.append((arrayDesiredRouterSTART[0], arrayDesiredRouterEND[0]))
 
             # Append the links
-            arrayDesiredConnections.append([objectDesiredConnection["tag"], arrayDesiredLinks])
+            arrayDesiredConnections.append([arrayConnectionElement[0], arrayDesiredLinks])
         case "seek":
             temp = None
         case "parallel":
@@ -399,7 +406,6 @@ for arrayConnectionElement in arrayConnectionElements:
             temp = None
 
 # Apply connections
-print(arrayDesiredConnections)
 for arrayDesiredConnection in arrayDesiredConnections:
     for objectConnection in objectConnections:
         if (objectConnection["tag"] == arrayDesiredConnection[0]):
