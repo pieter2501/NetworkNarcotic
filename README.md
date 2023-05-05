@@ -179,9 +179,9 @@ input:
     connectionmode = full, the connectionshift variable has no effect. This variable has a 
     circular nature and overflow will start back at the device with ID = 1.
 
-> **internet:** <**false** (default) | **true**>
+> **gateway:** <**false** (default) | **true**>
 
-    Influences whether or not a router is hooked to the escape network.
+    Influences whether or not a router cluster is hooked to the escape network.
 
 > **ipclass:** <**A** (default) | **B** | **C**>
 
