@@ -6,6 +6,8 @@ import copy                 # Required for creating shallow copies in for loops
 from schema import Schema, SchemaError, Optional, And, Or, Regex # Required for reading input files
 from uuid import uuid4      # Required for generating GNS3-compatible randoms
 from collections import deque # Required for shifting connections
+import psutil               # Required for finding which interface on the system has internet access
+import subprocess           # Required for finding which interface on the system has internet access
 
 """
 ###################################################################################################################
@@ -50,6 +52,9 @@ object_GNS3_PROJECT = {
 ###################################################################################################################
 Defining functions.
 
+- getGatewayInterface():
+  Looks up the first available system interface with internet access.
+
 - tupleCalculateCoordinates():
   Returns a tuple with the X and Y coordinate of a device.
 
@@ -61,8 +66,24 @@ Defining functions.
 
 - standardizeConnection():
   Looks up if a connection definition belongs with a certain tag specified in a router cluster's connectedto variable.
+
+- standardizeConnectionMinimal():
+  Looks up if a connection definition belongs with a certain tag specified in a router cluster's connectedto variable without checking existence.
 ###################################################################################################################
 """
+def getGatewayInterface() -> str:
+    dictAddresses = psutil.net_if_addrs()
+    arrayInterfaces = list(dictAddresses.keys())
+
+    for strInterface in arrayInterfaces:
+        strAddress = dictAddresses[strInterface][1].address
+        ping_process = subprocess.Popen(["ping", "-n", "1", "-S", strAddress, "8.8.8.8"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        ping_process.wait()
+        if ping_process.returncode == 0:
+            return strInterface
+    
+    return None
+
 def tupleCalculateCoordinates() -> tuple:
     return (0, 0)
 
@@ -197,6 +218,32 @@ objectGNS3RouterNodeScaffold = {
         "slot1": "NM-16ESW",
     }
 }
+objectGNS3CloudNodeScaffold = {
+    "compute_id": "local",
+    "name": None,
+    "node_id": None,
+    "node_type": "cloud",
+    "x": None,
+    "y": None,
+    "symbol": ":/symbols/cloud.svg",
+    "properties": {
+        "interfaces": [
+            {
+                "name": getGatewayInterface(),
+                "special": True,
+                "type": "ethernet"
+            },
+        ],
+        "ports_mapping": [
+            {
+                "interface": getGatewayInterface(),
+                "name": getGatewayInterface(),
+                "port_number": 0,
+                "type": "ethernet"
+            }
+        ]
+    }
+}
 objectGNS3SwitchNodeScaffold = {
     "compute_id": "local",
     "name": None,
@@ -243,7 +290,31 @@ for objectRouterCluster in objectRouterClusters:
                     arrayDesiredRouterCluster[1].append([objectRouterNodeConstruction["node_id"], 0])
 
         objectTemporaryGNS3Topology["nodes"].append(objectRouterNodeConstruction)
-        
+       
+    # Handle gateways
+    if (objectRouterCluster["gateway"] == True):
+        strCloudNode = str(uuid4())
+
+        # Create the cloud
+        objectCloudNodeConstruction = copy.deepcopy(objectGNS3CloudNodeScaffold)
+        objectCloudNodeConstruction["name"] = "INTERNET-" + objectRouterCluster["tag"]
+        objectCloudNodeConstruction["node_id"] = strCloudNode
+        objectCloudNodeConstruction["x"] = tupleCalculateCoordinates()[0] # TODO
+        objectCloudNodeConstruction["y"] = tupleCalculateCoordinates()[1] # TODO
+        objectTemporaryGNS3Topology["nodes"].append(objectCloudNodeConstruction)
+
+        # Create the link
+        tupleDesiredLink = None
+        for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
+            if (arrayDesiredRouterCluster[0] == objectRouterCluster["tag"]):
+                tupleDesiredLink = (strCloudNode, arrayDesiredRouterCluster[1][0][0])
+
+        objectLinkConstruction = copy.deepcopy(objectGNS3LinkScaffold)
+        objectLinkConstruction["link_id"] = str(uuid4())
+        objectLinkConstruction["nodes"].append({"adapter_number": 0, "port_number": 0, "node_id": strCloudNode})
+        addNodeToLink(tupleDesiredLink[1], objectLinkConstruction, arrayDesiredRouterClusters)
+        objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
+    
     if (objectRouterCluster["amount"] > 1):
         # For each router cluster, apply cables in case necessary
         match objectRouterCluster["clustermode"]:

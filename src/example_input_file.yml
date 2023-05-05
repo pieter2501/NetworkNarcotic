@@ -25,6 +25,8 @@ input:
 
     - tag: rout_B
       amount: 2
+      cables: 2
+      gateway: true
       ipsummary: 10.3.0.0/16
       connectedto:
         - conn_A
