@@ -357,28 +357,23 @@ for arrayConnectionElement in arrayConnectionElements:
     # Do the magic
     match objectDesiredConnection["connectionmode"]:
         case "single":
-            # Define the nodes
-            arrayDesiredNodes = []
+            # Define the links
+            arrayDesiredLinks = []
+            arrayNodes = []
             for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
                 for stringRouterClusterTag in arrayConnectionElement[1]:
                     if (arrayDesiredRouterCluster[0] == stringRouterClusterTag):
-                        arrayDesiredNodes.append(arrayDesiredRouterCluster[1][0][0])
+                        arrayNodes.append(arrayDesiredRouterCluster[1][0])
                         break
+            for arrayDesiredRouterSTART in arrayNodes:
+                for arrayDesiredRouterEND in arrayNodes:
+                    if (arrayDesiredRouterSTART[0] != arrayDesiredRouterEND[0]):
+                        if (not (arrayDesiredRouterEND[0], arrayDesiredRouterSTART[0]) in arrayDesiredLinks):
+                            arrayDesiredLinks.append((arrayDesiredRouterSTART[0], arrayDesiredRouterEND[0]))
 
-            # Append the nodes
-            booleanConnectionIsKnown = False
-            for arrayDesiredConnection in arrayDesiredConnections:
-                if (arrayDesiredConnection[0] == objectDesiredConnection["tag"]):
-                    booleanConnectionIsKnown = True
-                    break
 
-            if (booleanConnectionIsKnown == False):
-                arrayDesiredConnections.append([objectDesiredConnection["tag"], [arrayDesiredNodes]])
-            else:
-                for arrayDesiredConnection in arrayDesiredConnections:
-                    if (arrayDesiredConnection[0] == objectDesiredConnection["tag"]):
-                        arrayDesiredConnection[1].append(arrayDesiredNodes)
-                    break
+            # Append the links
+            arrayDesiredConnections.append([objectDesiredConnection["tag"], arrayDesiredLinks])
         case "full":
             # Define the links
             arrayDesiredLinks = []
