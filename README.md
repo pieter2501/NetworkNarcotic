@@ -162,7 +162,9 @@ input:
 
 > **gateway:** <**false** (default) | **true**>
 
-    Influences whether or not a router cluster is hooked to the escape network. Only router with ID = 1 acts as a gateway.
+    Influences whether or not a router cluster is hooked to the escape network, that is,
+    the network that provides your own system with internet access. Only router with 
+    ID = 1 acts as a gateway.
 
 > **routers:**
 
