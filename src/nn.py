@@ -5,6 +5,7 @@ import json                 # Required for writing output files
 import copy                 # Required for creating shallow copies in for loops
 from schema import Schema, SchemaError, Optional, And, Or, Regex # Required for reading input files
 from uuid import uuid4      # Required for generating GNS3-compatible randoms
+from collections import deque # Required for shifting connections
 
 """
 ###################################################################################################################
@@ -138,7 +139,7 @@ objectDesiredSchemaSwitchCluster = Schema({**objectDesiredSchemaBase.schema, **S
 }).schema})
 
 objectDesiredSchemaConnection = Schema({**objectDesiredSchemaBase.schema, **Schema({
-    Optional("connectionmode", default="single"): Or("single", "full", "seek", "parallel", "spread"),
+    Optional("connectionmode", default="single"): Or("single", "full", "parallel"),
     Optional("shiftable", default=True): bool,
     Optional("switches", default=None): [objectDesiredSchemaSwitchCluster]
 }).schema})
@@ -362,19 +363,23 @@ for arrayConnectionElement in arrayConnectionElements:
             arrayClusterA = []
             arrayClusterB = []
             for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
+                arrayShifted = deque(arrayDesiredRouterCluster[1])
+                for objectRouterCluster in objectRouterClusters:
+                    if (objectRouterCluster["tag"] == arrayDesiredRouterCluster[0] and objectDesiredConnection["shiftable"] == True):
+                        arrayShifted.rotate(-objectRouterCluster["connectionshift"])
+
                 for stringRouterClusterTag in arrayConnectionElement[1]:
                     if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][0]):
-                        arrayClusterA.append(arrayDesiredRouterCluster[1][0])
+                        arrayClusterA.append(arrayShifted[0])
                         break
                     if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][1]):
-                        arrayClusterB.append(arrayDesiredRouterCluster[1][0])
+                        arrayClusterB.append(arrayShifted[0])
                         break
             for arrayDesiredRouterSTART in arrayClusterA:
                 for arrayDesiredRouterEND in arrayClusterB:
                     if (arrayDesiredRouterSTART[0] != arrayDesiredRouterEND[0]):
                         if (not (arrayDesiredRouterEND[0], arrayDesiredRouterSTART[0]) in arrayDesiredLinks):
                             arrayDesiredLinks.append((arrayDesiredRouterSTART[0], arrayDesiredRouterEND[0]))
-
 
             # Append the links
             arrayDesiredConnections.append([arrayConnectionElement[0], arrayDesiredLinks])
@@ -398,12 +403,42 @@ for arrayConnectionElement in arrayConnectionElements:
 
             # Append the links
             arrayDesiredConnections.append([arrayConnectionElement[0], arrayDesiredLinks])
-        case "seek":
-            temp = None
         case "parallel":
-            temp = None
-        case "spread":
-            temp = None
+            # Define the links
+            arrayDesiredLinks = []
+
+            intClusterLengthA = None
+            intClusterLengthB = None
+            for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
+                if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][0]):
+                    intClusterLengthA = len(arrayDesiredRouterCluster[1])
+                if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][1]):
+                    intClusterLengthB = len(arrayDesiredRouterCluster[1])
+
+            arrayClusterA = []
+            arrayClusterB = []
+            for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
+                arrayShifted = deque(arrayDesiredRouterCluster[1])
+                for objectRouterCluster in objectRouterClusters:
+                    if (objectRouterCluster["tag"] == arrayDesiredRouterCluster[0] and objectDesiredConnection["shiftable"] == True):
+                        arrayShifted.rotate(-objectRouterCluster["connectionshift"])
+
+                intCounter = 0
+                if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][0]):
+                    for arrayDesiredRouter in arrayShifted:
+                        if (intCounter < min(intClusterLengthA, intClusterLengthB)):
+                            arrayClusterA.append(arrayDesiredRouter[0])
+                            intCounter += 1
+                if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][1]):
+                    for arrayDesiredRouter in arrayShifted:
+                        if (intCounter < min(intClusterLengthA, intClusterLengthB)):
+                            arrayClusterB.append(arrayDesiredRouter[0])
+                            intCounter += 1
+            for intCurrent in range(min(intClusterLengthA, intClusterLengthB)):
+                arrayDesiredLinks.append((arrayClusterA[intCurrent], arrayClusterB[intCurrent]))
+                
+            # Append the links
+            arrayDesiredConnections.append([arrayConnectionElement[0], arrayDesiredLinks])
 
 # Apply connections
 for arrayDesiredConnection in arrayDesiredConnections:
