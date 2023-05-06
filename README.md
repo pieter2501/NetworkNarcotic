@@ -158,7 +158,7 @@ input:
 > **connectionshift:** <**0** (default) | number between 0 and 255>
 
     Influences the starting point of a connection's cabling algorithm for a cluster. With 
-    connectionmode = full, the connectionshift variable has no effect. This variable has a 
+    connectionmode = full, the connectionshift variable has no visible effect. This variable has a 
     circular nature and overflow will start back at the device with ID = 1.
 
 > **gateway:** <**false** (default) | **true**>
