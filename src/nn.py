@@ -643,6 +643,11 @@ for arrayConnectionElement in arrayConnectionElements:
     objectDesiredConnection = standardizeConnectionMinimal(arrayConnectionElement[0], objectConnections)
     arrayInvolvedSwitchCluster = None
 
+    # Check for presence of switch cluster in case necessary
+    if (objectDesiredConnection["switches"] == None and len(arrayConnectionElement[1]) > 2):
+        print("Hooking more than two router clusters to a connection (" + objectDesiredConnection["tag"] + ") requires a switch cluster. Aborting.")
+        exit()
+
     for arrayDesiredSwitchCluster in arrayDesiredSwitchClusters:
         if (objectDesiredConnection["switches"] != None and arrayDesiredSwitchCluster[0] == objectDesiredConnection["switches"]["tag"]):
             arrayInvolvedSwitchCluster = arrayDesiredSwitchCluster
