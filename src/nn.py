@@ -9,6 +9,8 @@ from collections import deque # Required for shifting connections
 import psutil               # Required for finding which interface on the system has internet access
 import subprocess           # Required for finding which interface on the system has internet access
 
+# DISCLAIMER: the code is currently very messy, repetitive and probably contains many bugs.
+
 """
 ###################################################################################################################
 Setting up argument parsing.
@@ -667,16 +669,18 @@ for arrayConnectionElement in arrayConnectionElements:
                 arrayRouterShifted = deque(arrayDesiredRouterCluster[1])
                 for objectRouterCluster in objectRouterClusters:
                     for stringRouterTag in arrayConnectionElement[1]:
-                        if (objectRouterCluster["tag"] == arrayDesiredRouterCluster[0] == stringRouterTag and objectDesiredConnection["shiftable"] == True):
-                            arrayRouterShifted.rotate(-objectRouterCluster["connectionshift"])
+                        if (objectRouterCluster["tag"] == arrayDesiredRouterCluster[0] == stringRouterTag):
+                            if (objectDesiredConnection["shiftable"] == True):
+                                arrayRouterShifted.rotate(-objectRouterCluster["connectionshift"])
                             arrayRouterPoints.append([objectRouterCluster["tag"], arrayRouterShifted[0]])
                 
             # Put the switch cluster inbetween in case necessary
             if (arrayInvolvedSwitchCluster != None):
                 for objectSwitchCluster in objectSwitchClusters:
                     arraySwitchShifted = deque(arrayInvolvedSwitchCluster[1])
-                    if (objectSwitchCluster["tag"] == arrayInvolvedSwitchCluster[0] and objectDesiredConnection["shiftable"] == True):
-                        arraySwitchShifted.rotate(-objectSwitchCluster["connectionshift"])
+                    if (objectSwitchCluster["tag"] == arrayInvolvedSwitchCluster[0]):
+                        if (objectDesiredConnection["shiftable"] == True):
+                            arraySwitchShifted.rotate(-objectSwitchCluster["connectionshift"])
                         arraySwitchPoints.append(arraySwitchShifted[0])
                         break
                 for arrayRouterPoint in arrayRouterPoints:
@@ -700,8 +704,9 @@ for arrayConnectionElement in arrayConnectionElements:
                 arrayRouterShifted = deque(arrayDesiredRouterCluster[1])
                 for objectRouterCluster in objectRouterClusters:
                     for stringRouterTag in arrayConnectionElement[1]:
-                        if (objectRouterCluster["tag"] == arrayDesiredRouterCluster[0] == stringRouterTag and objectDesiredConnection["shiftable"] == True):
-                            arrayRouterShifted.rotate(-objectRouterCluster["connectionshift"])
+                        if (objectRouterCluster["tag"] == arrayDesiredRouterCluster[0] == stringRouterTag):
+                            if (objectDesiredConnection["shiftable"] == True):
+                                arrayRouterShifted.rotate(-objectRouterCluster["connectionshift"])
                             arrayPointsToAdd = []
                             for arrayRouter in arrayRouterShifted:
                                 arrayPointsToAdd.append(arrayRouter)
@@ -711,8 +716,9 @@ for arrayConnectionElement in arrayConnectionElements:
             if (arrayInvolvedSwitchCluster != None):
                 for objectSwitchCluster in objectSwitchClusters:
                     arraySwitchShifted = deque(arrayInvolvedSwitchCluster[1])
-                    if (objectSwitchCluster["tag"] == arrayInvolvedSwitchCluster[0] and objectDesiredConnection["shiftable"] == True):
-                        arraySwitchShifted.rotate(-objectSwitchCluster["connectionshift"])
+                    if (objectSwitchCluster["tag"] == arrayInvolvedSwitchCluster[0]):
+                        if (objectDesiredConnection["shiftable"] == True):
+                            arraySwitchShifted.rotate(-objectSwitchCluster["connectionshift"])
                         arrayPointsToAdd = []
                         for arraySwitch in arraySwitchShifted:
                             arrayPointsToAdd.append(arraySwitch)
@@ -742,33 +748,68 @@ for arrayConnectionElement in arrayConnectionElements:
             intRouterClusterLengthB = None
             intSwitchClusterLength = None
             for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
-                if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][0]):
+                if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][0]): # FAULTY, assumes 2 nodes!!!
                     intClusterLengthA = len(arrayDesiredRouterCluster[1])
                 if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][1]):
                     intClusterLengthB = len(arrayDesiredRouterCluster[1])
+            if (arrayInvolvedSwitchCluster != None):
+                intSwitchClusterLength = len(arrayInvolvedSwitchCluster[1])
 
-            arrayStartPoints = []
-            arrayEndPoints = []
+            arrayRouterPoints = []
+            arraySwitchPoints = []
             for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
-                arrayShifted = deque(arrayDesiredRouterCluster[1])
+                arrayRouterShifted = deque(arrayDesiredRouterCluster[1])
                 for objectRouterCluster in objectRouterClusters:
-                    if (objectRouterCluster["tag"] == arrayDesiredRouterCluster[0] and objectDesiredConnection["shiftable"] == True):
-                        arrayShifted.rotate(-objectRouterCluster["connectionshift"])
+                    for stringRouterTag in arrayConnectionElement[1]:
+                        if (objectRouterCluster["tag"] == arrayDesiredRouterCluster[0] == stringRouterTag):
+                            if (objectDesiredConnection["shiftable"] == True):
+                                arrayRouterShifted.rotate(-objectRouterCluster["connectionshift"])
+                            arrayPointsToAdd = []
+                            for arrayRouter in arrayRouterShifted:
+                                arrayPointsToAdd.append(arrayRouter)
+                            arrayRouterPoints.append([objectRouterCluster["tag"], arrayPointsToAdd])
 
-                intCounter = 0
-                if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][0]):
-                    for arrayDesiredRouter in arrayShifted:
-                        if (intCounter < min(intClusterLengthA, intClusterLengthB)):
-                            arrayStartPoints.append(arrayDesiredRouter[0])
-                            intCounter += 1
-                if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][1]):
-                    for arrayDesiredRouter in arrayShifted:
-                        if (intCounter < min(intClusterLengthA, intClusterLengthB)):
-                            arrayEndPoints.append(arrayDesiredRouter[0])
-                            intCounter += 1
-            for intCurrent in range(min(intClusterLengthA, intClusterLengthB)):
-                arrayDesiredLinks.append(((arrayStartPoints[intCurrent], 1), (arrayEndPoints[intCurrent], 1)))
-                
+            # Put the switch cluster inbetween in case necessary
+            if (arrayInvolvedSwitchCluster != None):
+                for objectSwitchCluster in objectSwitchClusters:
+                    arraySwitchShifted = deque(arrayInvolvedSwitchCluster[1])
+                    if (objectSwitchCluster["tag"] == arrayInvolvedSwitchCluster[0]):
+                        if (objectDesiredConnection["shiftable"] == True):
+                            arraySwitchShifted.rotate(-objectSwitchCluster["connectionshift"])
+                        arrayPointsToAdd = []
+                        for arraySwitch in arraySwitchShifted:
+                            arrayPointsToAdd.append(arraySwitch)
+                        arraySwitchPoints.append([objectSwitchCluster["tag"], arrayPointsToAdd])
+                for arrayRouterPoint in arrayRouterPoints:
+                    for arraySwitchPoint in arraySwitchPoints:
+                        intSmallestCluster = min(len(arrayRouterPoint[1]), len(arraySwitchPoint[1]))
+                        for intCurrent in range(intSmallestCluster):
+                            if (not ((arraySwitchPoint[1][intCurrent][0], 0), (arrayRouterPoint[1][intCurrent][0], 1)) in arrayDesiredLinks):
+                                arrayDesiredLinks.append(((arrayRouterPoint[1][intCurrent][0], 1), (arraySwitchPoint[1][intCurrent][0], 0)))
+            else:
+                # Messy and can be shortened based on the if-case up above
+                arrayStartPoints = []
+                arrayEndPoints = []
+                for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
+                    arrayShifted = deque(arrayDesiredRouterCluster[1])
+                    for objectRouterCluster in objectRouterClusters:
+                        if (objectRouterCluster["tag"] == arrayDesiredRouterCluster[0] and objectDesiredConnection["shiftable"] == True):
+                            arrayShifted.rotate(-objectRouterCluster["connectionshift"])
+
+                    intCounter = 0
+                    if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][0]):
+                        for arrayDesiredRouter in arrayShifted:
+                            if (intCounter < min(intClusterLengthA, intClusterLengthB)):
+                                arrayStartPoints.append(arrayDesiredRouter[0])
+                                intCounter += 1
+                    if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][1]):
+                        for arrayDesiredRouter in arrayShifted:
+                            if (intCounter < min(intClusterLengthA, intClusterLengthB)):
+                                arrayEndPoints.append(arrayDesiredRouter[0])
+                                intCounter += 1
+                for intCurrent in range(min(intClusterLengthA, intClusterLengthB)):
+                    arrayDesiredLinks.append(((arrayStartPoints[intCurrent], 1), (arrayEndPoints[intCurrent], 1)))
+
             # Append the links
             arrayDesiredConnections.append([arrayConnectionElement[0], arrayDesiredLinks])
 
