@@ -1,6 +1,7 @@
 import argparse             # Required for argument passing
 import yaml                 # Required for reading input files
 import networkx as nx       # Required for drawing topologies
+import numpy as np          # Required for drawing topologies
 import json                 # Required for writing output files
 import copy                 # Required for creating shallow copies in for loops
 from schema import Schema, SchemaError, Optional, And, Or, Regex # Required for reading input files
@@ -57,9 +58,6 @@ Defining functions.
 - getGatewayInterface():
   Looks up the first available system interface with internet access.
 
-- tupleCalculateCoordinates():
-  Returns a tuple with the X and Y coordinate of a device.
-
 - addNodeToLink():
   Adds a node (router or switch) to a link, meaning one of its two endpoints.
 
@@ -86,9 +84,6 @@ def getGatewayInterface() -> str:
     
     print("You are trying to create a gateway while your own system doesn't seem to have access to the internet. Aborting.")
     exit()
-
-def tupleCalculateCoordinates() -> tuple:
-    return (0, 0)
 
 def addNodeToLink(tupleDesiredLink, objectLinkConstruction, arrayDesiredRouterClusters, arrayDesiredSwitchClusters) -> None:
     for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
@@ -220,8 +215,8 @@ objectGNS3RouterNodeScaffold = {
     "name": None,
     "node_id": None,
     "node_type": "dynamips",
-    "x": None,
-    "y": None,
+    "x": 0,
+    "y": 0,
     "symbol": ":/symbols/router.svg",
     "properties": {
         "image": str_IMAGE,
@@ -238,8 +233,8 @@ objectGNS3CloudNodeScaffold = {
     "name": None,
     "node_id": None,
     "node_type": "cloud",
-    "x": None,
-    "y": None,
+    "x": 0,
+    "y": 0,
     "symbol": ":/symbols/cloud.svg",
     "properties": {
         "interfaces": [
@@ -264,8 +259,8 @@ objectGNS3SwitchNodeScaffold = {
     "name": None,
     "node_id": None,
     "node_type": "ethernet_switch",
-    "x": None,
-    "y": None,
+    "x": 0,
+    "y": 0,
     "symbol": ":/symbols/ethernet_switch.svg",
     "properties": {
         "ports_mapping": [
@@ -397,8 +392,6 @@ for objectSwitchCluster in objectSwitchClusters:
         objectSwitchNodeConstruction = copy.deepcopy(objectGNS3SwitchNodeScaffold)
         objectSwitchNodeConstruction["name"] = objectSwitchCluster["tag"] + "-id" + str(intCurrent + 1)
         objectSwitchNodeConstruction["node_id"] = str(uuid4())
-        objectSwitchNodeConstruction["x"] = tupleCalculateCoordinates()[0] # TODO
-        objectSwitchNodeConstruction["y"] = tupleCalculateCoordinates()[1] # TODO
 
         # Add the switch router to the topology
         booleanSwitchClusterIsKnown = False
@@ -493,8 +486,8 @@ for objectRouterCluster in objectRouterClusters:
         objectRouterNodeConstruction["properties"] = objectRouterNodePropertiesConstruction
         objectRouterNodeConstruction["name"] = objectRouterCluster["tag"] + "-id" + str(intCurrent + 1)
         objectRouterNodeConstruction["node_id"] = str(uuid4())
-        objectRouterNodeConstruction["x"] = tupleCalculateCoordinates()[0] # TODO
-        objectRouterNodeConstruction["y"] = tupleCalculateCoordinates()[1] # TODO
+        objectRouterNodeConstruction["x"] = 0
+        objectRouterNodeConstruction["y"] = 0
 
         # Add the created router to the topology
         booleanRouterClusterIsKnown = False
@@ -520,8 +513,8 @@ for objectRouterCluster in objectRouterClusters:
         objectCloudNodeConstruction = copy.deepcopy(objectGNS3CloudNodeScaffold)
         objectCloudNodeConstruction["name"] = "INTERNET-" + objectRouterCluster["tag"]
         objectCloudNodeConstruction["node_id"] = strCloudNode
-        objectCloudNodeConstruction["x"] = tupleCalculateCoordinates()[0] # TODO
-        objectCloudNodeConstruction["y"] = tupleCalculateCoordinates()[1] # TODO
+        objectCloudNodeConstruction["x"] = 0
+        objectCloudNodeConstruction["y"] = 0
         objectTemporaryGNS3Topology["nodes"].append(objectCloudNodeConstruction)
 
         # Create the link
@@ -827,8 +820,18 @@ for arrayDesiredConnection in arrayDesiredConnections:
                     objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
 
 # Handle coordinates
-# TODO
-# graphTest = nx.Graph()
+graphCoordinateSource = nx.Graph()
+objectLinks = objectTemporaryGNS3Topology["links"]
+for objectLink in objectLinks:
+    objectNodes = objectLink["nodes"]
+    graphCoordinateSource.add_edge(objectNodes[0]["node_id"], objectNodes[1]["node_id"])
+dictCoordinates = nx.fruchterman_reingold_layout(graphCoordinateSource)
+
+for arrayCoordinate in dictCoordinates:
+    for objectNode in objectTemporaryGNS3Topology["nodes"]:
+        if (objectNode["node_id"] == arrayCoordinate):
+            objectNode["x"] = round(dictCoordinates.get(arrayCoordinate)[0] * 700)
+            objectNode["y"] = round(dictCoordinates.get(arrayCoordinate)[1] * 700)
 
 print("Done building in-memory topology.")
 

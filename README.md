@@ -70,7 +70,9 @@ As seen in the picture,
 * encircled red are router clusters,
 * encircled green is a switch cluster in connection 'C'.
 
-Note that by default, the generated topology is based on the Fruchterman Reingold algorithm. The picture above has been manually reorganised to better display the cluster mechanism.
+Note that by default, the generated topology is based on the Fruchterman Reingold algorithm. The picture above has been manually reorganised to better display the cluster mechanism. The original topology looked like this:
+
+![The network produced based on the input file above without alterations](./img/example_algo.PNG)
 
 ## How to write input files
 ### **Important before you continue**
