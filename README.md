@@ -84,7 +84,7 @@ You can use a connection if you want to connect clusters to each other or connec
 
 The way clusters and connections are cabled depends on the variables **clustermode** and **connectionmode**. They're similar but cannot be used interchangeably. If no clustermode variable is defined in a cluster, the default value will be used (in this case 'full'). The same mechanism applies to the connectionmode variable, among others.
 
-Lastly, it's important to know that every device in a cluster (whether router or switch) receives a linearly assigned ID upon creation. Refer to the example network up above to see the ID's written on the devices. A cluster with 5 devices has ID's 1 to 5. ID's are unique within a cluster and are used by the **connectionmode** variable to:
+Lastly, it's important to know that every device in a cluster (whether router or switch) receives a linearly assigned ID upon creation. Refer to the example network up above to see the ID's as the device name suffix. A cluster with 5 devices has ID's 1 to 5. ID's are unique within a cluster and are used by the **connectionmode** variable to:
 
 * decide which device to select,
 * or to break ties when devices get selected in some other way. 
