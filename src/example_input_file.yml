@@ -9,10 +9,12 @@ input:
       connectionmode: parallel
 
     - tag: conn_C
+      cables: 2
       switches:
         tag: swit_A
         amount: 4
         clustermode: hubspoke
+        cables: 2
 
   routers:
     - tag: rout_A

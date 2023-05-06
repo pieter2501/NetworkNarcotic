@@ -88,24 +88,35 @@ def getGatewayInterface() -> str:
 def tupleCalculateCoordinates() -> tuple:
     return (0, 0)
 
-def addNodeToLink(stringNode, objectLinkConstruction, arrayDesiredRouterClusters) -> None:
+def addNodeToLink(tupleDesiredLink, objectLinkConstruction, arrayDesiredRouterClusters, arrayDesiredSwitchClusters) -> None:
     for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
         for arrayDesiredRouter in arrayDesiredRouterCluster[1]:
-            if (arrayDesiredRouter[0] == stringNode):
+            if (arrayDesiredRouter[0] == tupleDesiredLink[0]):
                 if (arrayDesiredRouter[1] > 16):
-                    print("One of your clusters exceeds the 16-port limit on one of its devices. Aborting.") # Depends on NM-16ESW's 16 slot limit
+                    print("One of your router clusters exceeds the 16-port limit on one of its devices. Aborting.") # Depends on NM-16ESW's 16 slot limit
                     exit()
 
-                objectLinkConstruction["nodes"].append({"adapter_number": 1, "port_number": arrayDesiredRouter[1], "node_id": arrayDesiredRouter[0]})
+                objectLinkConstruction["nodes"].append({"adapter_number": tupleDesiredLink[1], "port_number": arrayDesiredRouter[1], "node_id": arrayDesiredRouter[0]})
                 arrayDesiredRouter[1] += 1
                 break
+    
+    for arrayDesiredSwitchCluster in arrayDesiredSwitchClusters:
+        for arrayDesiredSwitch in arrayDesiredSwitchCluster[1]:
+            if (arrayDesiredSwitch[0] == tupleDesiredLink[0]):
+                if (arrayDesiredSwitch[1] > 16):
+                    print("One of your switch clusters exceeds the 16-port limit on one of its devices. Aborting.") # Arbitrarily set to 16 to equal routers
+                    exit()
 
-def writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, arrayDesiredRouterClusters, objectTemporaryGNS3Topology) -> None:
+                objectLinkConstruction["nodes"].append({"adapter_number": tupleDesiredLink[1], "port_number": arrayDesiredSwitch[1], "node_id": arrayDesiredSwitch[0]})
+                arrayDesiredSwitch[1] += 1
+                break
+
+def writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, arrayDesiredRouterClusters, arrayDesiredSwitchClusters, objectTemporaryGNS3Topology) -> None:
     for tupleDesiredLink in arrayDesiredLinks:
         objectLinkConstruction = copy.deepcopy(objectGNS3LinkScaffold)
         objectLinkConstruction["link_id"] = str(uuid4())
-        addNodeToLink(tupleDesiredLink[0], objectLinkConstruction, arrayDesiredRouterClusters)
-        addNodeToLink(tupleDesiredLink[1], objectLinkConstruction, arrayDesiredRouterClusters)
+        addNodeToLink(tupleDesiredLink[0], objectLinkConstruction, arrayDesiredRouterClusters, arrayDesiredSwitchClusters)
+        addNodeToLink(tupleDesiredLink[1], objectLinkConstruction, arrayDesiredRouterClusters, arrayDesiredSwitchClusters)
         objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
 
 def standardizeConnection(connection, objectConnections, objectRouterCluster) -> dict:
@@ -194,6 +205,7 @@ This is where the input file actually gets translated into a network design usin
 ###################################################################################################################
 """
 objectRouterClusters = objectDesiredSchemaTotal.validate(object_INPUT_FILE).get("input").get("routers")
+objectSwitchClusters = []
 objectConnections = objectDesiredSchemaTotal.validate(object_INPUT_FILE).get("input").get("connections")
 objectTemporaryGNS3Topology = {
     "computes": [],
@@ -252,7 +264,115 @@ objectGNS3SwitchNodeScaffold = {
     "node_type": "ethernet_switch",
     "x": None,
     "y": None,
-    "symbol": ":/symbols/ethernet_switch.svg"
+    "symbol": ":/symbols/ethernet_switch.svg",
+    "properties": {
+        "ports_mapping": [
+            {
+                "name": "Ethernet0",
+                "port_number": 0,
+                "type": "access",
+                "vlan": 1
+            },
+            {
+                "name": "Ethernet1",
+                "port_number": 1,
+                "type": "access",
+                "vlan": 1
+            },
+            {
+                "name": "Ethernet2",
+                "port_number": 2,
+                "type": "access",
+                "vlan": 1
+            },
+            {
+                "name": "Ethernet3",
+                "port_number": 3,
+                "type": "access",
+                "vlan": 1
+            },
+            {
+                "name": "Ethernet4",
+                "port_number": 4,
+                "type": "access",
+                "vlan": 1
+            },
+            {
+                "name": "Ethernet5",
+                "port_number": 5,
+                "type": "access",
+                "vlan": 1
+            },
+            {
+                "name": "Ethernet6",
+                "port_number": 6,
+                "type": "access",
+                "vlan": 1
+            },
+            {
+                "name": "Ethernet7",
+                "port_number": 7,
+                "type": "access",
+                "vlan": 1
+            },
+            {
+                "ethertype": "",
+                "name": "Ethernet8",
+                "port_number": 8,
+                "type": "access",
+                "vlan": 1
+            },
+            {
+                "ethertype": "",
+                "name": "Ethernet9",
+                "port_number": 9,
+                "type": "access",
+                "vlan": 1
+            },
+            {
+                "ethertype": "",
+                "name": "Ethernet10",
+                "port_number": 10,
+                "type": "access",
+                "vlan": 1
+            },
+            {
+                "ethertype": "",
+                "name": "Ethernet11",
+                "port_number": 11,
+                "type": "access",
+                "vlan": 1
+            },
+            {
+                "ethertype": "",
+                "name": "Ethernet12",
+                "port_number": 12,
+                "type": "access",
+                "vlan": 1
+            },
+            {
+                "ethertype": "",
+                "name": "Ethernet13",
+                "port_number": 13,
+                "type": "access",
+                "vlan": 1
+            },
+            {
+                "ethertype": "",
+                "name": "Ethernet14",
+                "port_number": 14,
+                "type": "access",
+                "vlan": 1
+            },
+            {
+                "ethertype": "",
+                "name": "Ethernet15",
+                "port_number": 15,
+                "type": "access",
+                "vlan": 1
+            }
+        ]
+    }
 }
 objectGNS3LinkScaffold = {
     "filters": {},
@@ -262,7 +382,105 @@ objectGNS3LinkScaffold = {
     "suspend": False
 }
 
-# Handle the routers
+# Collect switch clusters
+for objectConnection in objectConnections:
+    if (objectConnection["switches"] != None):
+        objectSwitchClusters.append(objectConnection["switches"])
+
+# Handle switch clusters
+arrayDesiredSwitchClusters = [] # Holds per cluster tag an array of arrays, the latter containing a node_id and currently available port number
+for objectSwitchCluster in objectSwitchClusters:
+    for intCurrent in range(objectSwitchCluster["amount"]):
+        # For each switch cluster, mutiplied by the "amount" in that cluster, create a switch
+        objectSwitchNodeConstruction = copy.deepcopy(objectGNS3SwitchNodeScaffold)
+        objectSwitchNodeConstruction["name"] = objectSwitchCluster["tag"] + "-id" + str(intCurrent + 1)
+        objectSwitchNodeConstruction["node_id"] = str(uuid4())
+        objectSwitchNodeConstruction["x"] = tupleCalculateCoordinates()[0] # TODO
+        objectSwitchNodeConstruction["y"] = tupleCalculateCoordinates()[1] # TODO
+
+        # Add the switch router to the topology
+        booleanSwitchClusterIsKnown = False
+        for arrayDesiredSwitchCluster in arrayDesiredSwitchClusters:
+            if (arrayDesiredSwitchCluster[0] == objectSwitchCluster["tag"]):
+                booleanSwitchClusterIsKnown = True
+                break
+        
+        if (booleanSwitchClusterIsKnown == False):
+            arrayDesiredSwitchClusters.append([objectSwitchCluster["tag"], [[objectSwitchNodeConstruction["node_id"], 0]]])
+        else:
+            for arrayDesiredSwitchCluster in arrayDesiredSwitchClusters:
+                if (arrayDesiredSwitchCluster[0] == objectSwitchCluster["tag"]):
+                    arrayDesiredSwitchCluster[1].append([objectSwitchNodeConstruction["node_id"], 0])
+
+        objectTemporaryGNS3Topology["nodes"].append(objectSwitchNodeConstruction)
+       
+    # Do the magic
+    if (objectSwitchCluster["amount"] > 1):
+        # For each switch cluster, apply cables in case necessary
+        match objectSwitchCluster["clustermode"]:
+            case "full":
+                # Define the links
+                arrayDesiredLinks = []
+                for arrayDesiredSwitchCluster in arrayDesiredSwitchClusters:
+                    if (arrayDesiredSwitchCluster[0] == objectSwitchCluster["tag"]):
+                        for arrayDesiredSwitchSTART in arrayDesiredSwitchCluster[1]:
+                            for arrayDesiredSwitchEND in arrayDesiredSwitchCluster[1]:
+                                if (arrayDesiredSwitchSTART[0] != arrayDesiredSwitchEND[0]):
+                                    if (not ((arrayDesiredSwitchEND[0], 0), (arrayDesiredSwitchSTART[0], 0)) in arrayDesiredLinks):
+                                        for intCurrent in range (objectSwitchCluster["cables"]):
+                                            arrayDesiredLinks.append(((arrayDesiredSwitchSTART[0], 0), (arrayDesiredSwitchEND[0], 0)))
+                        break
+
+                # Write the links
+                writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, [], arrayDesiredSwitchClusters, objectTemporaryGNS3Topology)
+            case "loop":
+                # Define the links
+                arrayDesiredLinks = []
+                stringEndPoint = arrayDesiredSwitchCluster[1]
+                intCounter = 0
+                for arrayDesiredSwitchCluster in arrayDesiredSwitchClusters:
+                    if (arrayDesiredSwitchCluster[0] == objectSwitchCluster["tag"]):
+                        for stringNode in arrayDesiredSwitchCluster[1]:
+                            if (intCounter != len(arrayDesiredSwitchCluster[1])):
+                                for intCurrent in range (objectSwitchCluster["cables"]):
+                                    arrayDesiredLinks.append(((stringNode[0], 0), (arrayDesiredSwitchCluster[1][(intCounter + 1) % len(arrayDesiredSwitchCluster[1])][0], 0)))
+                                intCounter += 1
+                        break
+                
+                # Write the links
+                writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, [], arrayDesiredSwitchClusters, objectTemporaryGNS3Topology)
+            case "line":
+                # Define the links
+                arrayDesiredLinks = []
+                stringEndPoint = arrayDesiredSwitchCluster[1]
+                intCounter = 0
+                for arrayDesiredSwitchCluster in arrayDesiredSwitchClusters:
+                    if (arrayDesiredSwitchCluster[0] == objectSwitchCluster["tag"]):
+                        for stringNode in arrayDesiredSwitchCluster[1]:
+                            if (intCounter != len(arrayDesiredSwitchCluster[1]) -1): # Notice the -1; the "cut" in the loop
+                                for intCurrent in range (objectSwitchCluster["cables"]):
+                                    arrayDesiredLinks.append(((stringNode[0], 0), (arrayDesiredSwitchCluster[1][(intCounter + 1) % len(arrayDesiredSwitchCluster[1])][0], 0)))
+                                intCounter += 1
+                        break
+
+                # Write the links
+                writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, [], arrayDesiredSwitchClusters, objectTemporaryGNS3Topology)
+            case "hubspoke":
+                # Define the links
+                arrayDesiredLinks = []
+                for arrayDesiredSwitchCluster in arrayDesiredSwitchClusters:
+                    if (arrayDesiredSwitchCluster[0] == objectSwitchCluster["tag"]):
+                        stringHubNode = arrayDesiredSwitchCluster[1][0][0]
+                        for stringNode in arrayDesiredSwitchCluster[1]:
+                            if (stringNode[0] != stringHubNode):
+                                for intCurrent in range (objectSwitchCluster["cables"]):
+                                    arrayDesiredLinks.append(((stringHubNode, 0), (stringNode[0], 0)))
+                        break
+
+                # Write the links
+                writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, [], arrayDesiredSwitchClusters, objectTemporaryGNS3Topology)
+
+# Handle router clusters
 arrayDesiredRouterClusters = [] # Holds per cluster tag an array of arrays, the latter containing a node_id and currently available port number
 for objectRouterCluster in objectRouterClusters:
     for intCurrent in range(objectRouterCluster["amount"]):
@@ -312,10 +530,11 @@ for objectRouterCluster in objectRouterClusters:
 
         objectLinkConstruction = copy.deepcopy(objectGNS3LinkScaffold)
         objectLinkConstruction["link_id"] = str(uuid4())
-        objectLinkConstruction["nodes"].append({"adapter_number": 0, "port_number": 0, "node_id": strCloudNode})
-        addNodeToLink(tupleDesiredLink[1], objectLinkConstruction, arrayDesiredRouterClusters)
+        objectLinkConstruction["nodes"].append({"adapter_number": 0, "port_number": 0, "node_id": strCloudNode}) # No risk on exceeding port limit
+        addNodeToLink((tupleDesiredLink[1], 1), objectLinkConstruction, arrayDesiredRouterClusters, arrayDesiredSwitchClusters)
         objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
     
+    # Do the magic
     if (objectRouterCluster["amount"] > 1):
         # For each router cluster, apply cables in case necessary
         match objectRouterCluster["clustermode"]:
@@ -327,13 +546,13 @@ for objectRouterCluster in objectRouterClusters:
                         for arrayDesiredRouterSTART in arrayDesiredRouterCluster[1]:
                             for arrayDesiredRouterEND in arrayDesiredRouterCluster[1]:
                                 if (arrayDesiredRouterSTART[0] != arrayDesiredRouterEND[0]):
-                                    if (not (arrayDesiredRouterEND[0], arrayDesiredRouterSTART[0]) in arrayDesiredLinks):
+                                    if (not ((arrayDesiredRouterEND[0], 1), (arrayDesiredRouterSTART[0], 1)) in arrayDesiredLinks):
                                         for intCurrent in range (objectRouterCluster["cables"]):
-                                            arrayDesiredLinks.append((arrayDesiredRouterSTART[0], arrayDesiredRouterEND[0]))
+                                            arrayDesiredLinks.append(((arrayDesiredRouterSTART[0], 1), (arrayDesiredRouterEND[0], 1)))
                         break
 
                 # Write the links
-                writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, arrayDesiredRouterClusters, objectTemporaryGNS3Topology)
+                writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, arrayDesiredRouterClusters, arrayDesiredSwitchClusters, objectTemporaryGNS3Topology)
             case "loop":
                 # Define the links
                 arrayDesiredLinks = []
@@ -344,12 +563,12 @@ for objectRouterCluster in objectRouterClusters:
                         for stringNode in arrayDesiredRouterCluster[1]:
                             if (intCounter != len(arrayDesiredRouterCluster[1])):
                                 for intCurrent in range (objectRouterCluster["cables"]):
-                                    arrayDesiredLinks.append((stringNode[0], arrayDesiredRouterCluster[1][(intCounter + 1) % len(arrayDesiredRouterCluster[1])][0]))
+                                    arrayDesiredLinks.append(((stringNode[0], 1), (arrayDesiredRouterCluster[1][(intCounter + 1) % len(arrayDesiredRouterCluster[1])][0], 1)))
                                 intCounter += 1
                         break
                 
                 # Write the links
-                writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, arrayDesiredRouterClusters, objectTemporaryGNS3Topology)
+                writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, arrayDesiredRouterClusters, arrayDesiredSwitchClusters, objectTemporaryGNS3Topology)
             case "line":
                 # Define the links
                 arrayDesiredLinks = []
@@ -360,12 +579,12 @@ for objectRouterCluster in objectRouterClusters:
                         for stringNode in arrayDesiredRouterCluster[1]:
                             if (intCounter != len(arrayDesiredRouterCluster[1]) -1): # Notice the -1; the "cut" in the loop
                                 for intCurrent in range (objectRouterCluster["cables"]):
-                                    arrayDesiredLinks.append((stringNode[0], arrayDesiredRouterCluster[1][(intCounter + 1) % len(arrayDesiredRouterCluster[1])][0]))
+                                    arrayDesiredLinks.append(((stringNode[0], 1), (arrayDesiredRouterCluster[1][(intCounter + 1) % len(arrayDesiredRouterCluster[1])][0], 1)))
                                 intCounter += 1
                         break
 
                 # Write the links
-                writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, arrayDesiredRouterClusters, objectTemporaryGNS3Topology)
+                writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, arrayDesiredRouterClusters, arrayDesiredSwitchClusters, objectTemporaryGNS3Topology)
             case "hubspoke":
                 # Define the links
                 arrayDesiredLinks = []
@@ -375,11 +594,11 @@ for objectRouterCluster in objectRouterClusters:
                         for stringNode in arrayDesiredRouterCluster[1]:
                             if (stringNode[0] != stringHubNode):
                                 for intCurrent in range (objectRouterCluster["cables"]):
-                                    arrayDesiredLinks.append((stringHubNode, stringNode[0]))
+                                    arrayDesiredLinks.append(((stringHubNode, 1), (stringNode[0], 1)))
                         break
 
                 # Write the links
-                writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, arrayDesiredRouterClusters, objectTemporaryGNS3Topology)
+                writeClusterLinks(arrayDesiredLinks, objectGNS3LinkScaffold, arrayDesiredRouterClusters, arrayDesiredSwitchClusters, objectTemporaryGNS3Topology)
 
 # Find connection elements
 arrayConnectionElements = [] # Holds per connection tag an array of involved router clusters
@@ -419,60 +638,69 @@ for objectRouterCluster in objectRouterClusters:
                                                 arrayConnectionElement[1].append(objectRouterClusterNest["tag"])
 
 # Define connections
-arrayDesiredConnections = [] # Holds per connection tag an array of tuples, the latter containing two node_id's
+arrayDesiredConnections = [] # Holds per connection tag an array of tuples, the latter containing two tuples with a node_id and an adapter number
 for arrayConnectionElement in arrayConnectionElements:
-    if (len(arrayConnectionElement[1]) > 2):
-        print(arrayConnectionElement[0])
-        print("Hooking more than two router clusters to a connection requires a switch cluster. Aborting. TODO")
-        exit()
-
     objectDesiredConnection = standardizeConnectionMinimal(arrayConnectionElement[0], objectConnections)
+    arrayInvolvedSwitchCluster = None
+
+    for arrayDesiredSwitchCluster in arrayDesiredSwitchClusters:
+        if (objectDesiredConnection["switches"] != None and arrayDesiredSwitchCluster[0] == objectDesiredConnection["switches"]["tag"]):
+            arrayInvolvedSwitchCluster = arrayDesiredSwitchCluster
 
     # Do the magic
     match objectDesiredConnection["connectionmode"]:
         case "single":
             # Define the links
             arrayDesiredLinks = []
-            arrayClusterA = []
-            arrayClusterB = []
-            for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
-                arrayShifted = deque(arrayDesiredRouterCluster[1])
-                for objectRouterCluster in objectRouterClusters:
-                    if (objectRouterCluster["tag"] == arrayDesiredRouterCluster[0] and objectDesiredConnection["shiftable"] == True):
-                        arrayShifted.rotate(-objectRouterCluster["connectionshift"])
 
-                for stringRouterClusterTag in arrayConnectionElement[1]:
-                    if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][0]):
-                        arrayClusterA.append(arrayShifted[0])
-                        break
-                    if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][1]):
-                        arrayClusterB.append(arrayShifted[0])
-                        break
-            for arrayDesiredRouterSTART in arrayClusterA:
-                for arrayDesiredRouterEND in arrayClusterB:
-                    if (arrayDesiredRouterSTART[0] != arrayDesiredRouterEND[0]):
-                        if (not (arrayDesiredRouterEND[0], arrayDesiredRouterSTART[0]) in arrayDesiredLinks):
-                            arrayDesiredLinks.append((arrayDesiredRouterSTART[0], arrayDesiredRouterEND[0]))
+            arrayRouterPoints = []
+            arraySwitchPoints = []
+            for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
+                arrayRouterShifted = deque(arrayDesiredRouterCluster[1])
+                for objectRouterCluster in objectRouterClusters:
+                    for stringRouterTag in arrayConnectionElement[1]:
+                        if (objectRouterCluster["tag"] == arrayDesiredRouterCluster[0] == stringRouterTag and objectDesiredConnection["shiftable"] == True):
+                            arrayRouterShifted.rotate(-objectRouterCluster["connectionshift"])
+                            arrayRouterPoints.append([objectRouterCluster["tag"], arrayRouterShifted[0]])
+                
+            for objectSwitchCluster in objectSwitchClusters:
+                arraySwitchShifted = deque(arrayInvolvedSwitchCluster[1])
+                if (objectSwitchCluster["tag"] == arrayInvolvedSwitchCluster[0] and objectDesiredConnection["shiftable"] == True):
+                    arraySwitchShifted.rotate(-objectSwitchCluster["connectionshift"])
+                    arraySwitchPoints.append(arraySwitchShifted[0])
+                    break
+                
+            # Put the switch cluster inbetween in case necessary
+            if (arrayInvolvedSwitchCluster != None):
+                for arrayRouterPoint in arrayRouterPoints:
+                    for arrayDesiredSwitch in arraySwitchPoints:
+                        arrayDesiredLinks.append(((arrayRouterPoint[1][0], 1), (arrayDesiredSwitch[0], 0)))
+            else:
+                for arrayRouterPointSTART in arrayRouterPoints:
+                    for arrayRouterPointEND in arrayRouterPoints:
+                        if (arrayRouterPointSTART[0] != arrayRouterPointEND[0]):
+                            if (not (arrayRouterPointEND[1][0], arrayRouterPointSTART[1][0]) in arrayDesiredLinks):
+                                arrayDesiredLinks.append(((arrayRouterPointSTART[1][0], 1), (arrayRouterPointEND[1][0], 1)))
 
             # Append the links
             arrayDesiredConnections.append([arrayConnectionElement[0], arrayDesiredLinks])
         case "full":
             # Define the links
             arrayDesiredLinks = []
-            arrayClusterA = []
-            arrayClusterB = []
+            arrayStartPoints = []
+            arrayEndPoints = []
             for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
                 if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][0]):
                     for arrayDesiredRouter in arrayDesiredRouterCluster[1]:
-                        arrayClusterA.append(arrayDesiredRouter)
+                        arrayStartPoints.append(arrayDesiredRouter)
                 if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][1]):
                     for arrayDesiredRouter in arrayDesiredRouterCluster[1]:
-                        arrayClusterB.append(arrayDesiredRouter)
-            for arrayDesiredRouterSTART in arrayClusterA:
-                for arrayDesiredRouterEND in arrayClusterB:
+                        arrayEndPoints.append(arrayDesiredRouter)
+            for arrayDesiredRouterSTART in arrayStartPoints:
+                for arrayDesiredRouterEND in arrayEndPoints:
                     if (arrayDesiredRouterSTART[0] != arrayDesiredRouterEND[0]):
                         if (not (arrayDesiredRouterEND[0], arrayDesiredRouterSTART[0]) in arrayDesiredLinks):
-                            arrayDesiredLinks.append((arrayDesiredRouterSTART[0], arrayDesiredRouterEND[0]))
+                            arrayDesiredLinks.append(((arrayDesiredRouterSTART[0], 1), (arrayDesiredRouterEND[0], 1)))
 
             # Append the links
             arrayDesiredConnections.append([arrayConnectionElement[0], arrayDesiredLinks])
@@ -488,8 +716,8 @@ for arrayConnectionElement in arrayConnectionElements:
                 if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][1]):
                     intClusterLengthB = len(arrayDesiredRouterCluster[1])
 
-            arrayClusterA = []
-            arrayClusterB = []
+            arrayStartPoints = []
+            arrayEndPoints = []
             for arrayDesiredRouterCluster in arrayDesiredRouterClusters:
                 arrayShifted = deque(arrayDesiredRouterCluster[1])
                 for objectRouterCluster in objectRouterClusters:
@@ -500,15 +728,15 @@ for arrayConnectionElement in arrayConnectionElements:
                 if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][0]):
                     for arrayDesiredRouter in arrayShifted:
                         if (intCounter < min(intClusterLengthA, intClusterLengthB)):
-                            arrayClusterA.append(arrayDesiredRouter[0])
+                            arrayStartPoints.append(arrayDesiredRouter[0])
                             intCounter += 1
                 if (arrayDesiredRouterCluster[0] == arrayConnectionElement[1][1]):
                     for arrayDesiredRouter in arrayShifted:
                         if (intCounter < min(intClusterLengthA, intClusterLengthB)):
-                            arrayClusterB.append(arrayDesiredRouter[0])
+                            arrayEndPoints.append(arrayDesiredRouter[0])
                             intCounter += 1
             for intCurrent in range(min(intClusterLengthA, intClusterLengthB)):
-                arrayDesiredLinks.append((arrayClusterA[intCurrent], arrayClusterB[intCurrent]))
+                arrayDesiredLinks.append(((arrayStartPoints[intCurrent], 1), (arrayEndPoints[intCurrent], 1)))
                 
             # Append the links
             arrayDesiredConnections.append([arrayConnectionElement[0], arrayDesiredLinks])
@@ -517,12 +745,13 @@ for arrayConnectionElement in arrayConnectionElements:
 for arrayDesiredConnection in arrayDesiredConnections:
     for objectConnection in objectConnections:
         if (objectConnection["tag"] == arrayDesiredConnection[0]):
-            for arrayDesiredLink in arrayDesiredConnection[1]:
+            for tupleDesiredLink in arrayDesiredConnection[1]:
                 for intCurrent in range(objectConnection["cables"]):
+                    #print(tupleDesiredLink)
                     objectLinkConstruction = copy.deepcopy(objectGNS3LinkScaffold)
                     objectLinkConstruction["link_id"] = str(uuid4())
-                    addNodeToLink(arrayDesiredLink[0], objectLinkConstruction, arrayDesiredRouterClusters)
-                    addNodeToLink(arrayDesiredLink[1], objectLinkConstruction, arrayDesiredRouterClusters)
+                    addNodeToLink(tupleDesiredLink[0], objectLinkConstruction, arrayDesiredRouterClusters, arrayDesiredSwitchClusters)
+                    addNodeToLink(tupleDesiredLink[1], objectLinkConstruction, arrayDesiredRouterClusters, arrayDesiredSwitchClusters)
                     objectTemporaryGNS3Topology["links"].append(objectLinkConstruction)
 
 # Handle coordinates
