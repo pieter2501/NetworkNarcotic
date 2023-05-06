@@ -39,7 +39,6 @@ input:
         tag: swit_A
         amount: 4
         clustermode: hubspoke
-        cables: 2
 
   routers:
     - tag: rout_A
