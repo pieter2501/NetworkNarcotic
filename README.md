@@ -81,7 +81,7 @@ NetworkNarcotic input files work with a concept called _clusters_. A cluster is 
 - Router clusters reside in the **routers** variable.
 - Switch clusters reside in a connection definition of the **connections** variable.
 
-You can use a connection if you want to connect clusters to each other or connect a stub network to a router. These connections can be direct (one-to-one) or contain switches, in which case a switch cluster needs to be added inside the desired connection definition. If more than 2 router clusters need to be connected, the connection definition should contain a switch cluster. Only one switch cluster can be added per connection definition.
+You can use a connection if you want to connect clusters to each other or connect a stub network to a router. These connections can be direct (router-to-router) or contain switches, in which case a switch cluster needs to be added inside the desired connection definition. If more than 2 router clusters need to be connected, the connection definition should contain a switch cluster. Only one switch cluster can be added per connection definition.
 
 The way clusters and connections are cabled depends on the variables **clustermode** and **connectionmode**. They're similar but cannot be used interchangeably. If no clustermode variable is defined in a cluster, the default value will be used (in this case 'full'). The same mechanism applies to the connectionmode variable, among others.
 
@@ -90,7 +90,7 @@ Lastly, it's important to know that every device in a cluster (whether router or
 * decide which device to select,
 * or to break ties when devices get selected in some other way. 
 
-ID = 1 has the highest priority and will always be selected first. Connectionmode values that require device ID's are marked down below with an **\* asterisk**.
+ID = 1 has the highest priority and will always be selected first. Variables that somehow depend on the device ID's are marked down below with an **\* asterisk**.
 
 ### **Variables: YAML structure**
 
@@ -139,8 +139,8 @@ input:
 
     > full        full mesh topology, every device is connected to every other device
     > loop        loop topology, devices are connected in a loop
-    > line        line topology, basically loop mode with a cut in it
-    > hubspoke    hub-and-spoke topology, every device is connected to one central device (ID = 1)
+    > line *      line topology, basically loop mode with a cut in it
+    > hubspoke *  hub-and-spoke topology, every device is connected to one central device (ID = 1)
     > ...         (more to come)
 
 > **connections:**
