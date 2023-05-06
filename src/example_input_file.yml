@@ -10,7 +10,7 @@ input:
 
     - tag: conn_C
       cables: 2
-      connectionmode: full
+      connectionmode: single
       switches:
         tag: swit_A
         amount: 4
