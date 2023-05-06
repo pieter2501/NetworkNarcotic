@@ -34,7 +34,6 @@ input:
       connectionmode: parallel
 
     - tag: conn_C
-      cables: 2
       switches:
         tag: swit_A
         amount: 4
