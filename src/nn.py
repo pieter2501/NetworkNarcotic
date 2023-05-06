@@ -613,29 +613,33 @@ for objectRouterCluster in objectRouterClusters:
                 if (arrayClusterConnection == objectDesiredConnection["tag"]):
                     print("Router cluster with tag " + objectRouterCluster["tag"] + " is referring to the same connection more than once. Aborting.")
                     exit()
-            arrayClusterConnections.append(objectDesiredConnection["tag"])
 
-            # Find all other router clusters that need this connection
+            booleanConnectionIsKnown = False
+            for arrayConnectionElement in arrayConnectionElements:
+                if (arrayConnectionElement[0] == objectDesiredConnection["tag"]):
+                    booleanConnectionIsKnown = True
+                    break
+            if (booleanConnectionIsKnown == False):
+                arrayConnectionElements.append([objectDesiredConnection["tag"], [objectRouterCluster["tag"]]])
+
+            # Find all other router clusters that need this connection, if any
             for objectRouterClusterNest in objectRouterClusters:
-                    if (objectRouterClusterNest["tag"] != objectRouterCluster["tag"] and objectRouterClusterNest["connectedto"] != None):
-                        for connectionNest in objectRouterClusterNest["connectedto"]:
-                            objectDesiredConnectionNest = standardizeConnection(connectionNest, objectConnections, objectRouterClusterNest)
-                            if (objectDesiredConnectionNest["tag"] == objectDesiredConnection["tag"]):
-                                booleanConnectionIsKnown = False
-                                for arrayConnectionElement in arrayConnectionElements:
-                                    if (arrayConnectionElement[0] == objectDesiredConnection["tag"]):
-                                        booleanConnectionIsKnown = True
-                                        break
+                if (objectRouterClusterNest["tag"] != objectRouterCluster["tag"] and objectRouterClusterNest["connectedto"] != None):
+                    for connectionNest in objectRouterClusterNest["connectedto"]:
+                        objectDesiredConnectionNest = standardizeConnection(connectionNest, objectConnections, objectRouterClusterNest)
+                        if (objectDesiredConnectionNest["tag"] == objectDesiredConnection["tag"]):
+                            booleanConnectionIsKnown = False
+                            for arrayConnectionElement in arrayConnectionElements:
+                                if (arrayConnectionElement[0] == objectDesiredConnection["tag"]):
+                                    booleanConnectionIsKnown = True
+                                    break
 
-                                if (booleanConnectionIsKnown == False):
-                                    arrayConnectionElements.append([objectDesiredConnection["tag"], [objectRouterCluster["tag"], objectRouterClusterNest["tag"]]])
-                                else:
-                                    for arrayConnectionElement in arrayConnectionElements:
-                                        if (arrayConnectionElement[0] == objectDesiredConnection["tag"]):
-                                            if (objectRouterCluster["tag"] not in arrayConnectionElement[1]):
-                                                arrayConnectionElement[1].append(objectRouterCluster["tag"])
-                                            if (objectRouterClusterNest["tag"] not in arrayConnectionElement[1]):
-                                                arrayConnectionElement[1].append(objectRouterClusterNest["tag"])
+                            for arrayConnectionElement in arrayConnectionElements:
+                                if (arrayConnectionElement[0] == objectDesiredConnection["tag"]):
+                                    if (objectRouterCluster["tag"] not in arrayConnectionElement[1]):
+                                        arrayConnectionElement[1].append(objectRouterCluster["tag"])
+                                    if (objectRouterClusterNest["tag"] not in arrayConnectionElement[1]):
+                                        arrayConnectionElement[1].append(objectRouterClusterNest["tag"])
 
 # Define connections
 arrayDesiredConnections = [] # Holds per connection tag an array of tuples, the latter containing two tuples with a node_id and an adapter number
