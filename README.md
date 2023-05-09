@@ -181,5 +181,4 @@ input:
 > **switches:**
 
      Opens a switches variable which contains switch cluster definitions. This is always done 
-     inside a connection definition. This variable cannot be combined with an internet variable 
-     in the same connection.
+     inside a connection definition.
