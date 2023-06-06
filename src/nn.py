@@ -380,9 +380,10 @@ objectGNS3LinkScaffold = {
 }
 
 # Collect switch clusters
-for objectConnection in objectConnections:
-    if (objectConnection["switches"] != None):
-        objectSwitchClusters.append(objectConnection["switches"])
+if (objectConnections is not None):
+    for objectConnection in objectConnections:
+        if (objectConnection["switches"] != None):
+            objectSwitchClusters.append(objectConnection["switches"])
 
 # Handle switch clusters
 arrayDesiredSwitchClusters = [] # Holds per cluster tag an array of arrays, the latter containing a node_id and currently available port number

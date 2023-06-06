@@ -1,0 +1,32 @@
+{
+    "name": "My NetworkNarcotic generated network (ID: 266293e6-fe85-49fa-8988-f319ad8b642e)",
+    "project_id": "592c1bc3-4038-4bfc-a1a4-914e214be32b",
+    "revision": 5,
+    "topology": {
+        "computes": [],
+        "drawings": [],
+        "links": [],
+        "nodes": [
+            {
+                "compute_id": "local",
+                "name": "router_A-id1",
+                "node_id": "0d9acb92-96fb-42f0-a0f6-9aae97399957",
+                "node_type": "dynamips",
+                "x": 0,
+                "y": 0,
+                "symbol": ":/symbols/router.svg",
+                "properties": {
+                    "image": "c2600-adventerprisek9-mz.124-15.T14.image",
+                    "image_md5sum": "483e3a579a5144ec23f2f160d4b0c0e2",
+                    "platform": "c2600",
+                    "ram": 160,
+                    "dynamips_id": 290222036279269669210734624741648358001,
+                    "slot0": "C2600-MB-1E",
+                    "slot1": "NM-16ESW"
+                }
+            }
+        ]
+    },
+    "type": "topology",
+    "version": "2.0.0"
+}
