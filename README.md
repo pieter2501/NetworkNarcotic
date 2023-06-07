@@ -6,7 +6,7 @@ Reading this README will allow you to perfectly understand and use NetworkNarcot
 ## Description
 Current procedure on how to use NetworkNarcotic:
 1) Manually build the input .yaml file
-2) Feed this input file to the NetworkNarcotic engine (Python script)
+2) Feed this input file to the NetworkNarcotic engine (Python 3.11 script)
     * The engine applies its algorithm against the input file:
         * checking for syntax errors,
         * checking for logic errors,
